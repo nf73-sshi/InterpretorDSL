@@ -1,6 +1,8 @@
 #include <iostream>
+#include "Lexer.h"
 
 int main()
 {
-    std::cout << "Hello Interpreteur :3\n";
+    Lexer l;
+    l.Tokenize("Yo la compagnie :3\nComment ca va les gens ?");
 }

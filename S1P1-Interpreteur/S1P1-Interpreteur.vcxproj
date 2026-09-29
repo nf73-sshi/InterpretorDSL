@@ -139,7 +139,11 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="S1P1-Interpreteur.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Lexer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
