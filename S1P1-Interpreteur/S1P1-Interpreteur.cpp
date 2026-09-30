@@ -4,5 +4,5 @@
 int main()
 {
     Lexer l;
-    l.Tokenize("main.evo");
+    l.Tokenize("main.p2w");
 }

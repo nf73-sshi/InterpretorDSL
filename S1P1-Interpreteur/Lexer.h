@@ -16,9 +16,9 @@ enum TokenType
 	TROOP,
 };
 
-struct alignas(8) Pos
+struct alignas(16) Pos
 {
-	int line = 0, col = 0;
+	size_t line = 0, col = 0;
 };
 
 struct Lexer
@@ -30,6 +30,6 @@ struct Lexer
 	void Tokenize(const char* path);
 
 private:
-	void HandleElement(const char* element);
+	void HandleElement(std::string elt, size_t i);
 };
 
