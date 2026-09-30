@@ -60,7 +60,41 @@ void Lexer::HandleElement(std::string elt, size_t i)
 		return (c >= 48 && c <= 57);
 	};
 
-	if (isDigit(elt[0])) //NUMBER
+	if (elt.find("continue") != std::string::npos)
+		std::cout << "CONTINUE found" << std::endl;
+
+	else if (elt.find("Troop") != std::string::npos)
+		std::cout << "TROOP found" << std::endl;
+
+	else if (elt.find("elif") != std::string::npos)
+		std::cout << "ELIF found" << std::endl;
+
+	else if (elt.find("else") != std::string::npos)
+		std::cout << "ELSE found" << std::endl;
+
+	else if (elt.find("if") != std::string::npos)
+		std::cout << "IF found" << std::endl;
+
+	else if (elt.find("(") != std::string::npos)
+		std::cout << "LPARENTHESIS found" << std::endl;
+
+	else if (elt.find(")") != std::string::npos)
+		std::cout << "RPARENTHESIS found" << std::endl;
+
+	else if (elt.find(",") != std::string::npos)
+		std::cout << "COMMA found" << std::endl;
+
+	else if (elt.find(";") != std::string::npos)
+		std::cout << "SEMICOLON found" << std::endl;
+
+	else if (elt.find(":") != std::string::npos)
+		std::cout << "COLON found" << std::endl;
+
+	else if (elt.find("\"") != std::string::npos)
+		std::cout << "QUOTE found" << std::endl;
+
+	//NUMBER
+	if (isDigit(elt[0])) 
 	{
 		int number_type = 1; //0 = invalid | 1 = int | 2 = float
 
