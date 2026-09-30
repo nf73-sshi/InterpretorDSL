@@ -83,9 +83,9 @@ int main()
     Lexer l;
     l.Tokenize("main.p2w");
 
-    std::string test = "({*,;+-:<>/=\"})";
+  /*  std::string test = "({*,;+-:<>/=\"})";
 	for (char c : test)
 	{
 		tokenTest(c);
-	}
+	}*/
 }

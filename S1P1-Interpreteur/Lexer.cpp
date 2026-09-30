@@ -14,10 +14,61 @@ void Lexer::Tokenize(const char* path)
 
 		switch (c)
 		{
+		case('('):
+			AddToken(c, LPARENTHESIS);
+			break;
 
+		case(')'):
+			AddToken(c, RPARENTHESIS);
+			break;
+
+		case('{'):
+			std::cout << "LBRACKET found" << std::endl;
+			break;
+		case('}'):
+			std::cout << "RBRACKET found" << std::endl;
+			break;
+		case(','):
+			std::cout << "COMMA found" << std::endl;
+			break;
+		case(';'):
+			std::cout << "SEMICOLON found" << std::endl;
+			break;
+		case(':'):
+			std::cout << "COLON found" << std::endl;
+			break;
+		case('"'):
+			std::cout << "QUOTE found" << std::endl;
+			break;
+		case('+'):
+			std::cout << "ADD found" << std::endl;
+			break;
+		case('-'):
+			std::cout << "SUB found" << std::endl;
+			break;
+		case('*'):
+			std::cout << "MUL found" << std::endl;
+			break;
+		case('/'):
+			std::cout << "DIV found" << std::endl;
+			break;
+		case('>'):
+			std::cout << "SUP found" << std::endl;
+			break;
+		case('<'):
+			std::cout << "INF found" << std::endl;
+			break;
+		case('='):
+			std::cout << "EQUAL found" << std::endl;
+			break;
 		}
 
 		std::cout << c;
+	}
+
+	for (int i = 0; i < token_lexemes.size(); ++i)
+	{
+		std::cout << "[" << token_lexemes[i] << "]";
 	}
 }
 
@@ -156,6 +207,10 @@ void Lexer::HandleElement(std::string elt, size_t i)
 	}
 }
 
+void Lexer::AddToken(char lexeme, TokenType type)
+{
+	AddToken((const char*)lexeme, type);
+}
 void Lexer::AddToken(const char* lexeme, TokenType type)
 {
 	token_lexemes.push_back(lexeme);

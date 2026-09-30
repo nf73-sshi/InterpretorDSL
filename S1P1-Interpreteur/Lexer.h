@@ -49,6 +49,7 @@ private:
 
 	void HandleElement(std::string elt, size_t i);
 
+	void AddToken(char lexeme, TokenType type);
 	void AddToken(const char* lexeme, TokenType type);
 };
 
