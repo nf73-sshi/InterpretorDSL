@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="S1P1-Interpreteur/S1P1-Interpreteur.vcxproj" />
+  <Project Path="S1P1-Interpreteur/S1P1-Interpreteur.vcxproj" Id="b17dcf59-eae1-4b9f-92d1-77acb538a857" />
 </Solution>

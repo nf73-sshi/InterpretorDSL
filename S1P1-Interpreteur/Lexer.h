@@ -5,7 +5,7 @@
 enum TokenType
 {
 	LPARENTHESIS, RPARENTHESIS,
-	SEMICOLON, COLON, COMMA,
+	SEMICOLON, COLON, COMMA, QUOTE,
 
 	IDENTIFIER,
 	NUMBER,
@@ -27,6 +27,9 @@ struct Lexer
 	std::vector<Pos> token_positions;
 	std::vector<std::string> token_names;
 
-	void Tokenize(const char* file);
+	void Tokenize(const char* path);
+
+private:
+	void HandleElement(const char* element);
 };
 
