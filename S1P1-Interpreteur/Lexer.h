@@ -23,13 +23,27 @@ struct alignas(16) Pos
 
 struct Lexer
 {
+	std::string text = {};
+
 	std::vector<TokenType> token_types;
 	std::vector<Pos> token_positions;
-	std::vector<std::string> token_names;
+	std::vector<const char*> token_lexemes;
 
 	void Tokenize(const char* path);
 
 private:
+	int start = 0;
+	int current = 0;
+
+	int line = 0;
+	int col = 0;
+
+	char GetNextChar();
+
+	void ReadFile(const char* path);
+
 	void HandleElement(std::string elt, size_t i);
+
+	void AddToken(const char* lexeme, TokenType type);
 };
 

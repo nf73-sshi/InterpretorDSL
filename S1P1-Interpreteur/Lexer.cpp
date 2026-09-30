@@ -6,6 +6,28 @@
 
 void Lexer::Tokenize(const char* path)
 {
+	ReadFile(path);
+
+	while(current < text.size())
+	{
+		char c = GetNextChar();
+
+		switch (c)
+		{
+
+		}
+
+		std::cout << c;
+	}
+}
+
+char Lexer::GetNextChar()
+{
+	return text.at(current++);
+}
+
+void Lexer::ReadFile(const char* path)
+{
 	std::ifstream file(path);
 
 	if (!file.is_open())
@@ -15,42 +37,8 @@ void Lexer::Tokenize(const char* path)
 		return;
 	}
 
-	std::string line;
-	std::string elt; //element
-
-	if (line.find("if") != std::string::npos)
-		std::cout << "if found !\n";
-
-	size_t i = 0; //elt count
-	size_t l = 1;
-	size_t c = 1;
-
-	while (getline(file, line))
-	{
-		while (!line.empty())
-		{
-			size_t elt_pos = line.find(" ");
-
-			if (elt_pos == std::string::npos)
-			{
-				elt = line.substr(0, line.size());
-				line = {};
-			}
-			else
-			{
-				elt = line.substr(0, elt_pos);
-				line = line.substr(elt_pos + 1, line.size() - elt_pos - 1);
-			}
-
-			std::cout << "[" << elt << "]"; //TODO treat the element
-
-			HandleElement(elt, i);
-			token_names.push_back(elt);
-			token_positions.push_back({l, c});
-		}
-
-		std::cout << "\n";
-	}
+	text = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+	file.close();
 }
 
 void Lexer::HandleElement(std::string elt, size_t i)
@@ -94,7 +82,7 @@ void Lexer::HandleElement(std::string elt, size_t i)
 		std::cout << "QUOTE found" << std::endl;
 
 	//NUMBER
-	if (isDigit(elt[0])) 
+	else if (isDigit(elt[0])) 
 	{
 		int number_type = 1; //0 = invalid | 1 = int | 2 = float
 
@@ -125,4 +113,11 @@ void Lexer::HandleElement(std::string elt, size_t i)
 			}
 		}
 	}
+}
+
+void Lexer::AddToken(const char* lexeme, TokenType type)
+{
+	token_lexemes.push_back(lexeme);
+	token_types.push_back(type);
+	token_positions.push_back(Pos(line, col));
 }
