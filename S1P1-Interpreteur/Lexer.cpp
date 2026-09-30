@@ -275,20 +275,21 @@ bool Lexer::IsNumber()
 	char current_char = text[current];
 	int number_type = 1; //0 = invalid | 1 = int | 2 = float
 
-	if (current_char == '.')
+	bool digit = isDigit(current_char);
+
+	if (digit == false)
 		number_type = 0;
 
-	while (current_char != '\0' && current_char != '\n' && current_char != ' ' && current_char != ',')
+	while (digit || current_char == '.')
 	{
 		if (number_type == 0)
 			break;
 
-		if (isDigit(current_char) == false)
+		if (digit == false)
 		{
 			if (number_type == 2) // Multiple .
 				number_type = 0;
-
-			if (current_char == '.') // First .
+			else if (current_char == '.') // First .
 				number_type = 2;
 			else
 				number_type = 0;
@@ -296,9 +297,10 @@ bool Lexer::IsNumber()
 
 		++i;
 		current_char = text[current + i];
+		digit = isDigit(current_char);
 	}
 
-	if (text[current - 1 + i] == '.') //if the last char is . or if it's invalid
+	if (text[current + i] == '.') //if the last char is . or if it's invalid
 		number_type = 0;
 
 	if (number_type != 0)
