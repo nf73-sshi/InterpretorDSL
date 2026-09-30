@@ -1,4 +1,8 @@
 Troop ebarb = { 1, 2, 3, 4, 5, 6, 7, 8 }
+val random_calcul = ( 7 - 3 ) * 5 / 10
 
 if ebarb.pv == 69 + 420 :
 finish = true
+return
+
+finish = false

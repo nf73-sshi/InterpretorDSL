@@ -104,7 +104,7 @@ void Lexer::Tokenize(const char* path)
 				continue;
 			}
 		case('f'):
-			if (Match("alse", 3))
+			if (Match("alse", 4))
 			{
 				AddToken(FALSE);
 				continue;
@@ -118,6 +118,18 @@ void Lexer::Tokenize(const char* path)
 			if (Match("hile", 4))
 			{
 				AddToken(WHILE);
+				continue;
+			}
+		case('r'):
+			if (Match("eturn", 5))
+			{
+				AddToken(RETURN);
+				continue;
+			}
+		case('v'):
+			if (Match("al", 2))
+			{
+				AddToken(VAL);
 				continue;
 			}
 		case('b'):
@@ -161,9 +173,9 @@ void Lexer::Tokenize(const char* path)
 	size_t current_line = 0;
 	for (int i = 0; i < token_lexemes.size(); ++i)
 	{
-		if (token_positions[i].line > current_line)
+		while(token_positions[i].line > current_line)
 		{
-			current_line = token_positions[i].line;
+			current_line++;
 			std::cout << std::endl;
 		}
 
@@ -216,7 +228,7 @@ bool Lexer::IsAnIdentifier()
 
 	auto isLetter = [](char c) -> bool
 		{
-			return (c >= 97 && c <= 122) || (c >= 65 && c <= 90);
+			return (c >= 97 && c <= 122) || (c >= 65 && c <= 90) || (c == '_');
 		};
 
 	auto isDigit = [](char c) -> bool
