@@ -1,29 +1,25 @@
 #include "Lexer.h"
 #include <sstream>
+#include <fstream>
 #include <iostream>
 #include <regex>
 
-void Lexer::Tokenize(const char* file)
+void Lexer::Tokenize(const char* path)
 {
-	std::string_view f(file);
-	std::string_view line;
-	std::string_view elt; //element
+	std::ifstream file(path);
 
-	while (!f.empty())
+	if (!file.is_open())
 	{
-		size_t line_pos = f.find("\n");
+		std::cerr << "File not found !\n";
+		abort();
+		return;
+	}
 
-		if (line_pos == std::string::npos)
-		{
-			line = f.substr(0, f.size() - 1);
-			f = {};
-		}
-		else
-		{
-			line = f.substr(0, line_pos);
-			f = f.substr(line_pos + 1, f.size() - line_pos - 1); //Keep the text after the first ;
-		}
+	std::string line; ::
+	std::string elt; //element
 
+	while (getline(file, line))
+	{
 		while (!line.empty())
 		{
 			size_t elt_pos = line.find(" ");
@@ -39,9 +35,15 @@ void Lexer::Tokenize(const char* file)
 				line = line.substr(elt_pos + 1, line.size() - elt_pos - 1);
 			}
 
-			std::cout << elt << " "; //TODO treat the element
+			std::cout << "[" << elt << "]"; //TODO treat the element
+			HandleElement(elt.c_str());
 		}
 
 		std::cout << "\n";
 	}
+}
+
+void Lexer::HandleElement(const char* element)
+{
+
 }

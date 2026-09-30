@@ -5,12 +5,10 @@
 enum TokenType
 {
 	LPARENTHESIS, RPARENTHESIS,
-	SEMICOLON, COLON, COMMA,
+	SEMICOLON, COLON, COMMA, QUOTE,
 
 	IDENTIFIER,
-	NUMBER, // TODO ask if we need to separate Int and Float here
-	BOOL,
-	STRING,
+	NUMBER,
 
 	IF, ELIF, ELSE,
 	FOR, WHILE, BREAK, CONTINUE,
@@ -29,6 +27,9 @@ struct Lexer
 	std::vector<Pos> token_positions;
 	std::vector<std::string> token_names;
 
-	void Tokenize(const char* file);
+	void Tokenize(const char* path);
+
+private:
+	void HandleElement(const char* element);
 };
 
