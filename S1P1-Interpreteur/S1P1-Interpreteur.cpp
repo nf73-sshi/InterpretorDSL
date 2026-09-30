@@ -33,6 +33,12 @@ void tokenTest(char c)
 	case(')'):
 		std::cout << "RPARENTHESIS found" << std::endl;
 		break;
+	case('{'):
+		std::cout << "LBRACKET found" << std::endl;
+		break;
+	case('}'):
+		std::cout << "RBRACKET found" << std::endl;
+		break;
 	case(','):
 		std::cout << "COMMA found" << std::endl;
 		break;
@@ -42,7 +48,7 @@ void tokenTest(char c)
 	case(':'):
 		std::cout << "COLON found" << std::endl;
 		break;
-	case('\"'):
+	case('"'):
 		std::cout << "QUOTE found" << std::endl;
 		break;
 	case('+'):
@@ -77,7 +83,7 @@ int main()
     Lexer l;
     l.Tokenize("main.p2w");
 
-    std::string test = "(*,;+-:<>/=\")";
+    std::string test = "({*,;+-:<>/=\"})";
 	for (char c : test)
 	{
 		tokenTest(c);
