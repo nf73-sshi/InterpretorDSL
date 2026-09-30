@@ -4,77 +4,193 @@
 #include <iostream>
 #include <regex>
 
+#include "Debug.h"
+
 void Lexer::Tokenize(const char* path)
 {
 	ReadFile(path);
 
 	while(current < text.size())
 	{
+		start = current;
 		char c = GetNextChar();
 
 		switch (c)
 		{
-		case('('):
-			AddToken(c, LPARENTHESIS);
-			break;
+		case('\n'):
+			continue;
+		case(' '):
+			continue;
 
+		case('.'):
+			AddToken(DOT);
+			continue;
+
+		case('('):
+			AddToken(LPARENTHESIS);
+			continue;
 		case(')'):
-			AddToken(c, RPARENTHESIS);
-			break;
+			AddToken(RPARENTHESIS);
+			continue;
 
 		case('{'):
-			std::cout << "LBRACKET found" << std::endl;
-			break;
+			AddToken(LBRACKET);
+			continue;
 		case('}'):
-			std::cout << "RBRACKET found" << std::endl;
-			break;
+			AddToken(RBRACKET);
+			continue;
+
 		case(','):
-			std::cout << "COMMA found" << std::endl;
-			break;
+			AddToken(COMMA);
+			continue;
 		case(';'):
-			std::cout << "SEMICOLON found" << std::endl;
-			break;
+			AddToken(SEMICOLON);
+			continue;
 		case(':'):
-			std::cout << "COLON found" << std::endl;
-			break;
+			AddToken(COLON);
+			continue;
 		case('"'):
-			std::cout << "QUOTE found" << std::endl;
-			break;
+			AddToken(QUOTE);
+			continue;
+
 		case('+'):
-			std::cout << "ADD found" << std::endl;
-			break;
+			AddToken(ADD);
+			continue;
 		case('-'):
-			std::cout << "SUB found" << std::endl;
-			break;
+			AddToken(SUB);
+			continue;
 		case('*'):
-			std::cout << "MUL found" << std::endl;
-			break;
+			AddToken(MUL);
+			continue;
 		case('/'):
-			std::cout << "DIV found" << std::endl;
-			break;
+			AddToken(DIV);
+			continue;
+
 		case('>'):
-			std::cout << "SUP found" << std::endl;
-			break;
+			AddToken(Match("=", 1) ? SUPEQUAL : SUP);
+			continue;
 		case('<'):
-			std::cout << "INF found" << std::endl;
-			break;
+			AddToken(Match("=", 1) ? INFEQUAL : INF);
+			continue;
 		case('='):
-			std::cout << "EQUAL found" << std::endl;
-			break;
+			AddToken(Match("=", 1) ? EQUAL : ASSIGN);
+			continue;
+		case('!'):
+			AddToken(Match("=", 1) ? NOTEQUAL : NOT);
+			continue;
+
+		case('i'):
+			if (Match("f", 1))
+			{
+				AddToken(IF);
+				continue;
+			}
+		case('e'):
+			if (Match("lif", 3))
+			{
+				AddToken(ELIF);
+				continue;
+			}
+			else if (Match("lse", 3))
+			{
+				AddToken(ELSE);
+				continue;
+			}
+
+		case('t'):
+			if (Match("rue", 3))
+			{
+				AddToken(TRUE);
+				continue;
+			}
+		case('f'):
+			if (Match("alse", 3))
+			{
+				AddToken(FALSE);
+				continue;
+			}
+			else if (Match("or", 2))
+			{
+				AddToken(FOR);
+				continue;
+			}
+		case('w'):
+			if (Match("hile", 4))
+			{
+				AddToken(WHILE);
+				continue;
+			}
+		case('b'):
+			if (Match("reak", 4))
+			{
+				AddToken(BREAK);
+				continue;
+			}
+		case('c'):
+			if (Match("ontinue", 7))
+			{
+				AddToken(CONTINUE);
+				continue;
+			}
+
+		case('T'):
+			if (Match("roop", 4))
+			{
+				AddToken(TROOP);
+				continue;
+			}
 		}
 
-		std::cout << c;
+		if (IsNumber())
+		{
+			AddToken(NUMBER);
+			continue;
+		}
+		
+		if (IsAnIdentifier())
+		{
+			AddToken(IDENTIFIER);
+			continue;
+		}
+
+		// ERROR 
+		Debug::Log("An error has occured at line : ", line, ", col : ", col, " | First char : ", c, "\n");
+		break;
 	}
 
+	size_t current_line = 0;
 	for (int i = 0; i < token_lexemes.size(); ++i)
 	{
-		std::cout << "[" << token_lexemes[i] << "]";
+		if (token_positions[i].line > current_line)
+		{
+			current_line = token_positions[i].line;
+			std::cout << std::endl;
+		}
+
+		std::cout << RESET << "[" << COLOR << token_lexemes[i] << RESET << "] ";
 	}
 }
 
 char Lexer::GetNextChar()
 {
-	return text.at(current++);
+	char c = text.at(current++);
+
+	if (c == '\n')
+	{
+		col = 0;
+		start = current;
+		line++;
+	}
+	else if (c == ' ')
+		start = current;
+
+	col++;
+	return c;
+}
+
+void Lexer::NextLine()
+{
+
 }
 
 void Lexer::ReadFile(const char* path)
@@ -92,129 +208,126 @@ void Lexer::ReadFile(const char* path)
 	file.close();
 }
 
-void Lexer::HandleElement(std::string elt, size_t i)
+bool Lexer::IsAnIdentifier()
 {
-	auto isDigit = [](char c) -> bool
-	{
-		return (c >= 48 && c <= 57);
-	};
+	//Start with the first digit
+	current--;
+	start = current;
 
-	if (elt.find("continue") != std::string::npos)
-		std::cout << "CONTINUE found" << std::endl;
-
-	else if (elt.find("Troop") != std::string::npos)
-		std::cout << "TROOP found" << std::endl;
-
-	else if (elt.find("while") != std::string::npos)
-		std::cout << "WHILE found" << std::endl;
-
-	else if (elt.find("break") != std::string::npos)
-		std::cout << "BREAK found" << std::endl;
-
-	else if (elt.find("elif") != std::string::npos)
-		std::cout << "ELIF found" << std::endl;
-
-	else if (elt.find("else") != std::string::npos)
-		std::cout << "ELSE found" << std::endl;
-
-	else if (elt.find("for") != std::string::npos)
-		std::cout << "FOR found" << std::endl;
-
-	else if (elt.find("if") != std::string::npos)
-		std::cout << "IF found" << std::endl;
-
-	else if (elt.find("==") != std::string::npos)
-		std::cout << "COMPARE found" << std::endl;
-
-	else if (elt.find(">=") != std::string::npos)
-		std::cout << "SUPEQUAL found" << std::endl;
-
-	else if (elt.find("<=") != std::string::npos)
-		std::cout << "INFEQUAL found" << std::endl;
-
-	else if (elt.find("(") != std::string::npos)
-		std::cout << "LPARENTHESIS found" << std::endl;
-
-	else if (elt.find(")") != std::string::npos)
-		std::cout << "RPARENTHESIS found" << std::endl;
-
-	else if (elt.find(",") != std::string::npos)
-		std::cout << "COMMA found" << std::endl;
-
-	else if (elt.find(";") != std::string::npos)
-		std::cout << "SEMICOLON found" << std::endl;
-
-	else if (elt.find(":") != std::string::npos)
-		std::cout << "COLON found" << std::endl;
-
-	else if (elt.find("\"") != std::string::npos)
-		std::cout << "QUOTE found" << std::endl;
-
-	else if (elt.find("+") != std::string::npos)
-		std::cout << "ADD found" << std::endl;
-
-	else if (elt.find("-") != std::string::npos)
-		std::cout << "SUB found" << std::endl;
-
-	else if (elt.find("*") != std::string::npos)
-		std::cout << "MUL found" << std::endl;
-
-	else if (elt.find("/") != std::string::npos)
-		std::cout << "DIV found" << std::endl;
-
-	else if (elt.find(">") != std::string::npos)
-		std::cout << "SUP found" << std::endl;
-
-	else if (elt.find("<") != std::string::npos)
-		std::cout << "INF found" << std::endl;
-
-	else if (elt.find("=") != std::string::npos)
-		std::cout << "EQUAL found" << std::endl;
-
-
-
-	//NUMBER
-	else if (isDigit(elt[0])) 
-	{
-		int number_type = 1; //0 = invalid | 1 = int | 2 = float
-
-		if (elt.back() == '.')
-			number_type = 0;
-		else
+	auto isLetter = [](char c) -> bool
 		{
-			for (int i = 0; i < elt.size(); ++i)
-			{
-				if (isDigit(elt[i]) == false)
-				{
-					if (number_type == 2) // Multiple .
-					{
-						number_type = 0;
-						break;
-					}
+			return (c >= 97 && c <= 122) || (c >= 65 && c <= 90);
+		};
 
-					if (elt[i] == '.') // First .
-						number_type = 2;
-					else
-					{
-						number_type = 0;
-						break;
-					}
-				}
+	auto isDigit = [](char c) -> bool
+		{
+			return (c >= 48 && c <= 57);
+		};
 
-				continue;
-			}
-		}
+	size_t i = 0;
+	char current_char = text[current];
+	bool is_valid = true;
+
+	if (isLetter(current_char) == false) //The first char need to be a letter
+		is_valid = false;
+
+	while (current_char != '\0' && current_char != '\n' && current_char != ' ')
+	{
+		if (isDigit(current_char) == false && isLetter(current_char) == false) //neither a letter or a digit
+			break;
+
+		++i;
+		current_char = text[current + i];
 	}
+
+	if (is_valid)
+		current += i;
+	else
+		current++;
+
+	return is_valid;
 }
 
-void Lexer::AddToken(char lexeme, TokenType type)
+bool Lexer::IsNumber()
 {
-	std::string 
-	AddToken(lexeme, type);
+	//Start with the first digit
+	current--;
+	start = current;
+
+	auto isDigit = [](char c) -> bool
+		{
+			return (c >= 48 && c <= 57);
+		};
+
+	size_t i = 0;
+	char current_char = text[current];
+	int number_type = 1; //0 = invalid | 1 = int | 2 = float
+
+	if (current_char == '.')
+		number_type = 0;
+
+	while (current_char != '\0' && current_char != '\n' && current_char != ' ' && current_char != ',')
+	{
+		if (number_type == 0)
+			break;
+
+		if (isDigit(current_char) == false)
+		{
+			if (number_type == 2) // Multiple .
+				number_type = 0;
+
+			if (current_char == '.') // First .
+				number_type = 2;
+			else
+				number_type = 0;
+		}
+
+		++i;
+		current_char = text[current + i];
+	}
+
+	if (text[current - 1 + i] == '.') //if the last char is . or if it's invalid
+		number_type = 0;
+
+	if (number_type != 0)
+		current += i;
+	else
+		current++;
+
+	return number_type;
 }
-void Lexer::AddToken(const char* lexeme, TokenType type)
+
+void Lexer::AddToken(TokenType type)
+{
+	AddToken(std::string_view(text.data() + start, current - start), type);
+}
+void Lexer::AddToken(std::string_view lexeme, TokenType type)
 {
 	token_lexemes.push_back(lexeme);
 	token_types.push_back(type);
 	token_positions.push_back(Pos(line, col));
+}
+
+bool Lexer::Match(const char* match_text, int size)
+{
+	size_t i = 0;
+	std::string_view text_to_check(text.data() + current, size);
+
+	while (match_text[i] != '\0')
+	{
+		if (text_to_check[i] != match_text[i])
+			return false;
+
+		++i;
+	}
+
+	if (current + i < text.size())
+	{
+		char next_char = text[current + i];
+		if (next_char != ' ' && next_char != '\n')
+			return false;
+	}
+
+	current += size;
+	return true;
 }
