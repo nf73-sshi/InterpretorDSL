@@ -66,14 +66,32 @@ void Lexer::HandleElement(std::string elt, size_t i)
 	else if (elt.find("Troop") != std::string::npos)
 		std::cout << "TROOP found" << std::endl;
 
+	else if (elt.find("while") != std::string::npos)
+		std::cout << "WHILE found" << std::endl;
+
+	else if (elt.find("break") != std::string::npos)
+		std::cout << "BREAK found" << std::endl;
+
 	else if (elt.find("elif") != std::string::npos)
 		std::cout << "ELIF found" << std::endl;
 
 	else if (elt.find("else") != std::string::npos)
 		std::cout << "ELSE found" << std::endl;
 
+	else if (elt.find("for") != std::string::npos)
+		std::cout << "FOR found" << std::endl;
+
 	else if (elt.find("if") != std::string::npos)
 		std::cout << "IF found" << std::endl;
+
+	else if (elt.find("==") != std::string::npos)
+		std::cout << "COMPARE found" << std::endl;
+
+	else if (elt.find(">=") != std::string::npos)
+		std::cout << "SUPEQUAL found" << std::endl;
+
+	else if (elt.find("<=") != std::string::npos)
+		std::cout << "INFEQUAL found" << std::endl;
 
 	else if (elt.find("(") != std::string::npos)
 		std::cout << "LPARENTHESIS found" << std::endl;
@@ -92,6 +110,29 @@ void Lexer::HandleElement(std::string elt, size_t i)
 
 	else if (elt.find("\"") != std::string::npos)
 		std::cout << "QUOTE found" << std::endl;
+
+	else if (elt.find("+") != std::string::npos)
+		std::cout << "ADD found" << std::endl;
+
+	else if (elt.find("-") != std::string::npos)
+		std::cout << "SUB found" << std::endl;
+
+	else if (elt.find("*") != std::string::npos)
+		std::cout << "MUL found" << std::endl;
+
+	else if (elt.find("/") != std::string::npos)
+		std::cout << "DIV found" << std::endl;
+
+	else if (elt.find(">") != std::string::npos)
+		std::cout << "SUP found" << std::endl;
+
+	else if (elt.find("<") != std::string::npos)
+		std::cout << "INF found" << std::endl;
+
+	else if (elt.find("=") != std::string::npos)
+		std::cout << "EQUAL found" << std::endl;
+
+
 
 	//NUMBER
 	if (isDigit(elt[0])) 
@@ -126,3 +167,5 @@ void Lexer::HandleElement(std::string elt, size_t i)
 		}
 	}
 }
+
+
