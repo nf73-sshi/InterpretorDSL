@@ -209,7 +209,8 @@ void Lexer::HandleElement(std::string elt, size_t i)
 
 void Lexer::AddToken(char lexeme, TokenType type)
 {
-	AddToken((const char*)lexeme, type);
+	std::string 
+	AddToken(lexeme, type);
 }
 void Lexer::AddToken(const char* lexeme, TokenType type)
 {
