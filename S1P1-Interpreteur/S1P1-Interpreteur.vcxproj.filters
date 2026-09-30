@@ -28,6 +28,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="main.evo" />
+    <None Include="main.p2w" />
   </ItemGroup>
 </Project>
