@@ -8,9 +8,7 @@ enum TokenType
 	SEMICOLON, COLON, COMMA,
 
 	IDENTIFIER,
-	NUMBER, // TODO ask if we need to separate Int and Float here
-	BOOL,
-	STRING,
+	NUMBER,
 
 	IF, ELIF, ELSE,
 	FOR, WHILE, BREAK, CONTINUE,
