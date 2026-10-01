@@ -171,15 +171,15 @@ void Lexer::Tokenize(const char* path)
 	}
 
 	size_t current_line = 0;
-	for (int i = 0; i < token_lexemes.size(); ++i)
+	for (int i = 0; i < tokens.size(); ++i)
 	{
-		while(token_positions[i].line > current_line)
+		while(tokens[i].pos.line > current_line)
 		{
 			current_line++;
 			std::cout << std::endl;
 		}
 
-		std::cout << RESET << "[" << COLOR << token_lexemes[i] << RESET << "] ";
+		std::cout << RESET << "[" << COLOR << tokens[i].lexeme << RESET << "] ";
 	}
 }
 
@@ -198,11 +198,6 @@ char Lexer::GetNextChar()
 
 	col++;
 	return c;
-}
-
-void Lexer::NextLine()
-{
-
 }
 
 void Lexer::ReadFile(const char* path)
@@ -317,9 +312,7 @@ void Lexer::AddToken(TokenType type)
 }
 void Lexer::AddToken(std::string_view lexeme, TokenType type)
 {
-	token_lexemes.push_back(lexeme);
-	token_types.push_back(type);
-	token_positions.push_back(Pos(line, col));
+	tokens.push_back(Token{ type, lexeme, Pos(line, col) });
 }
 
 bool Lexer::Match(const char* match_text, int size)
