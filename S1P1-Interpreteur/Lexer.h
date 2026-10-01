@@ -25,13 +25,18 @@ struct alignas(16) Pos
 	size_t line = 0, col = 0;
 };
 
+struct Token
+{
+	TokenType type;
+	std::string_view lexeme;
+	Pos pos;
+};
+
 struct Lexer
 {
 	std::string text = {};
 
-	std::vector<TokenType> token_types;
-	std::vector<Pos> token_positions;
-	std::vector<std::string_view> token_lexemes;
+	std::vector<Token> tokens;
 
 	void Tokenize(const char* path);
 
@@ -43,7 +48,6 @@ private:
 	int col = 0;
 
 	char GetNextChar();
-	void NextLine();
 
 	void ReadFile(const char* path);
 
