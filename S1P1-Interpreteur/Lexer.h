@@ -25,30 +25,6 @@ struct alignas(16) Pos
 	size_t line = 0, col = 0;
 };
 
-class function
-{
-	public:
-		virtual function() = default;
-};
-class Statement
-{
-public:
-	 virtual Statement() = default;
-};
-class VariableStatement : public Statement
-{
-	std::string name;
-	std::vector<function> functionsList;
-};
-struct Parser
-{
-	int actual = 0;
-	std::vector<TokenType> token_list;
-	TokenType peek(){ return token_list[actual];}
-	TokenType previous() { return token_list[actual - 1]; }
-	void ReadToken();
-};
-
 struct Token
 {
 	TokenType type;
@@ -56,6 +32,36 @@ struct Token
 	Pos pos;
 
 };
+
+class function
+{
+public:
+	virtual function() = default;
+};
+
+class Statement
+{
+public:
+	virtual Statement() = default;
+};
+
+class VariableStatement : public Statement
+{
+	std::string name;
+	std::vector<function> functionsList;
+};
+
+struct Parser
+{
+	int m_actual = 0;
+	std::vector<Token> m_token_list;
+public:
+	Parser(std::vector<Token> token_list) { m_token_list = token_list; };
+	Token peek() { return m_token_list[m_actual]; }
+	Token previous() { return m_token_list[m_actual - 1]; }
+	bool check(TokenType type) { return peek().type; }
+};
+
 
 struct Lexer
 {
