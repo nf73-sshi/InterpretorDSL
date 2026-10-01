@@ -345,3 +345,85 @@ bool Lexer::Match(const char* match_text, int size)
 	current += size;
 	return true;
 }
+
+void Parser::ReadToken()
+{
+	for (TokenType t : token_list)
+	{
+		switch (t)
+		{
+		case LPARENTHESIS:
+			break;
+		case RPARENTHESIS:
+			break;
+		case LBRACKET:
+			break;
+		case RBRACKET:
+			break;
+		case SEMICOLON:
+			break;
+		case COLON:
+			break;
+		case COMMA:
+			break;
+		case QUOTE:
+			break;
+		case VAL:
+			break;
+		case ADD:
+			break;
+		case SUB:
+			break;
+		case MUL:
+			break;
+		case DIV:
+			break;
+		case DOT:
+			break;
+		case ASSIGN:
+			break;
+		case SUP:
+			break;
+		case INF:
+			break;
+		case SUPEQUAL:
+			break;
+		case INFEQUAL:
+			break;
+		case EQUAL:
+			break;
+		case NOT:
+			break;
+		case NOTEQUAL:
+			break;
+		case IF:
+			break;
+		case ELIF:
+			break;
+		case ELSE:
+			break;
+		case FOR:
+			break;
+		case WHILE:
+			break;
+		case BREAK:
+			break;
+		case CONTINUE:
+			break;
+		case RETURN:
+			break;
+		case TRUE:
+			break;
+		case FALSE:
+			break;
+		case IDENTIFIER:
+			break;
+		case NUMBER:
+			break;
+		case TROOP:
+			break;
+		default:
+			break;
+		}
+	}
+}

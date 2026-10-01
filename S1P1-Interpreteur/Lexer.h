@@ -25,10 +25,33 @@ struct alignas(16) Pos
 	size_t line = 0, col = 0;
 };
 
+class function
+{
+	public:
+		virtual function() = default;
+};
+class Statement
+{
+public:
+	 virtual Statement() = default;
+};
+class VariableStatement : public Statement
+{
+	std::string name;
+	std::vector<function> functionsList;
+};
+struct Parser
+{
+	int actual = 0;
+	std::vector<TokenType> token_list;
+	TokenType peek(){ return token_list[actual];}
+	TokenType previous() { return token_list[actual - 1]; }
+	void ReadToken();
+};
+
 struct Lexer
 {
 	std::string text = {};
-
 	std::vector<TokenType> token_types;
 	std::vector<Pos> token_positions;
 	std::vector<std::string_view> token_lexemes;
