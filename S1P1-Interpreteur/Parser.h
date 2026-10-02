@@ -17,7 +17,8 @@ enum StmtType
 {
 	STMT_NONE,
 	STMT_IF,
-	STMT_ELSE
+	STMT_ELSE,
+	STMT_ELIF
 };
 enum ExprType
 {
@@ -122,6 +123,23 @@ struct IfStmt : public Stmt
 	}
 
 };
+
+struct ElifStmt : public Stmt
+{
+	Expr* parameter;
+	Block* block;
+
+	ElifStmt(Token _id, Expr* _parameter, Block* _block)
+	{
+		node_type = STMT;
+		stmt_type = STMT_IF;
+		id = _id;
+		parameter = _parameter;
+		block = _block;
+	}
+
+};
+
 struct Expr : public Node
 {
 	ExprType type = EXPR_NONE;
