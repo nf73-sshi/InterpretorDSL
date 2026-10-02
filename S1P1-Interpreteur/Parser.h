@@ -113,15 +113,15 @@ struct ElseStmt : public Stmt
 };
 struct IfStmt : public Stmt
 {	
-	Expr* parametrer;
+	Expr* parameter;
 	Block* block;
 
-	IfStmt(Token _id, Expr* _parametrer, Block* _block)
+	IfStmt(Token _id, Expr* _parameter, Block* _block)
 	{
 		node_type = STMT;
 		stmt_type = STMT_IF;
 		id = _id;
-		parametrer = _parametrer;
+		parameter = _parameter;
 		block = _block;
 	}
 
@@ -185,35 +185,37 @@ struct Binary : public Expr
 
 struct Parser
 {
-	int m_actual = 0;
-	std::vector<Token> m_tokenList;
+	int actual = 0;
+	std::vector<Token> tokens;
+	std::vector<Node*> nodes;
+
 public:
-	Parser(std::vector<Token> tokenList) { m_tokenList = tokenList; };
-	Token& peek() { return m_tokenList[m_actual]; }
+	Parser(std::vector<Token> tokenList) { tokens = tokenList; };
+	Token& peek() { return tokens[actual]; }
 	
 	Token& advance()
 	{
-		if (m_actual >= m_tokenList.size())
+		if (actual >= tokens.size())
 			return peek();
 
 		else
-			return m_tokenList[++m_actual];
+			return tokens[++actual];
 	}
 
 	Token& previous()
 	{
-		if (m_actual == 0)
-			return m_tokenList[0];
+		if (actual == 0)
+			return tokens[0];
 
-		return m_tokenList[m_actual - 1];
+		return tokens[actual - 1];
 	}
 
 	Token& next()
 	{
-		if (m_actual >= m_tokenList.size())
-			return m_tokenList.back();
+		if (actual >= tokens.size())
+			return tokens.back();
 
-		return m_tokenList[m_actual + 1];
+		return tokens[actual + 1];
 	}
 
 	TokenType check() { return peek().type; }

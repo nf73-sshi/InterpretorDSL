@@ -2,8 +2,10 @@
 
 void Parser::Parse()
 {
-    while (m_actual < m_tokenList.size())
+    while (actual < tokens.size())
     {
+        Node* p_node = nullptr;
+
         Token& current = peek();
         Token& next = Parser::next();
 
@@ -13,12 +15,17 @@ void Parser::Parse()
             switch (next.type)
             {
             case ASSIGN:
-                parse_assign();
+                p_node = parse_assign();
                 break;
             }
 
             break;
+
+       
         }
+
+        if(p_node != nullptr)
+            nodes.push_back(p_node);
     }
 }
 
@@ -31,7 +38,7 @@ Assign* Parser::parse_assign()
 Expr* Parser::parse_expr(int min_binding_power)
 {
     advance();
-    Expr* left = prefix();                 // littéral, variable, appel, (expr), -x, !x
+    Expr* left = prefix();                  // littéral, variable, appel, (expr), -x, !x
     
     while(true)
     {
@@ -79,6 +86,11 @@ Expr* Parser::prefix()
 
     case TokenType::IDENTIFIER:
         return new Variable(current);
+
+    case TokenType::SUB:
+    case TokenType::NOT:
+        return new Unary(current.lexeme.data(), nullptr);
+
 
     }
 
