@@ -3,22 +3,85 @@
 #include <vector>
 #include "Lexer.h"
 
-class Function
+enum NodeType
 {
-public:
-	virtual Function() = default;
+	NODE_NONE,
+
+	EXPR,
+	ASSIGN,
 };
 
-class Statement
+enum ExprType
 {
-public:
-	virtual Statement() = default;
+	EXPR_NONE, 
+
+	LITERAL,
+	UNARY,
+	BINARY,
 };
 
-class VariableStatement : public Statement
+struct Node
 {
-	std::string m_name;
-	std::vector<Function> m_functionsList;
+	NodeType node_type = NODE_NONE;
+};
+
+struct Assign : public Node
+{
+	Token id; //identifier
+	Token op;
+	Expr* expr;
+
+	Assign(Token _id, Token _op, Expr* _expr)
+	{
+		node_type = ASSIGN;
+		id = _id; op = _op; expr = _expr;
+	}
+};
+
+struct Expr : public Node
+{
+	ExprType type = EXPR_NONE;
+
+	Expr()
+	{
+		node_type = EXPR;
+	}
+};
+
+struct Literal : public Expr
+{
+	Token token;
+
+	Literal(Token _token)
+	{
+		type = LITERAL;
+		token = _token;
+	}
+};
+
+struct Unary : public Expr
+{
+	char symbol = ' ';
+	Expr* right = nullptr;
+
+	Unary(char _symbol, Expr* _right)
+	{
+		type = UNARY;
+		right = _right;
+	}
+};
+
+struct Binary : public Expr
+{
+	Expr* left = nullptr;
+	Token op;
+	Expr* right = nullptr;
+
+	Binary(Expr* _left, Token _op, Expr* _right)
+	{
+		type = BINARY;
+		left = _left; op = _op; right = _right;
+	}
 };
 
 struct Parser
