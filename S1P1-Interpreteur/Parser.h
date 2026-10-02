@@ -3,10 +3,10 @@
 #include <vector>
 #include "Lexer.h"
 
-class function
+class Function
 {
 public:
-	virtual function() = default;
+	virtual Function() = default;
 };
 
 class Statement
@@ -17,17 +17,17 @@ public:
 
 class VariableStatement : public Statement
 {
-	std::string name;
-	std::vector<function> functionsList;
+	std::string m_name;
+	std::vector<Function> m_functionsList;
 };
 
 struct Parser
 {
 	int m_actual = 0;
-	std::vector<Token> m_token_list;
+	std::vector<Token> m_tokenList;
 public:
-	Parser(std::vector<Token> token_list) { m_token_list = token_list; };
-	Token peek() { return m_token_list[m_actual]; }
-	Token previous() { return m_token_list[m_actual - 1]; }
+	Parser(std::vector<Token> tokenList) { m_tokenList = tokenList; };
+	Token peek() { return m_tokenList[m_actual]; }
+	Token previous() { return m_tokenList[m_actual - 1]; }
 	bool check(TokenType type) { return peek().type; }
 };
