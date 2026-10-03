@@ -56,11 +56,11 @@ struct Expr
 struct AssignStmt : public Stmt
 {
 	std::string name = "";
-	Expr* expr = nullptr;
+	std::unique_ptr<Expr> expr = nullptr;
 
-	AssignStmt(std::string _name, Expr* _expr) : Stmt(ASSIGN_STMT)
+	AssignStmt(std::string _name, std::unique_ptr<Expr> _expr) : Stmt(ASSIGN_STMT)
 	{
-		name = _name; expr = _expr;
+		name = _name; expr = std::move(_expr);
 	}
 
 	void Print() override
@@ -74,12 +74,12 @@ struct AssignStmt : public Stmt
 struct ParamStmt : public Stmt
 {
 	std::string name = "";
-	Expr* expr;
+	std::unique_ptr<Expr> expr;
 
-	ParamStmt(std::string _name ,Expr* _expr) : Stmt(PARAM_STMT)
+	ParamStmt(std::string _name , std::unique_ptr<Expr> _expr) : Stmt(PARAM_STMT)
 	{
 		name = _name;
-		expr = _expr;
+		expr = std::move(_expr);
 	}
 
 	void Print() override
@@ -93,18 +93,17 @@ struct ParamStmt : public Stmt
 struct TroopStmt : public Stmt
 {
 	std::string var_name = "";
-	std::vector<ParamStmt*> params;
+	std::vector<std::unique_ptr<Stmt>> params;
 
-	TroopStmt(std::string _var_name, std::vector<ParamStmt*> _params) : Stmt(TROOP_STMT)
+	TroopStmt(std::string _var_name) : Stmt(TROOP_STMT)
 	{
 		var_name = _var_name;
-		params = _params;
 	}
 
 	void Print() override
 	{
 		std::cout << "TROOP | " << var_name << " = ";
-		for (ParamStmt* p : params)
+		for (std::unique_ptr<Stmt>& p : params)
 		{
 			p->Print();
 		}
@@ -114,17 +113,14 @@ struct TroopStmt : public Stmt
 
 struct BlockStmt : public Stmt
 {
-	std::vector<Stmt*> statements;
+	std::vector<std::unique_ptr<Stmt>> statements;
 
-	BlockStmt(std::vector<Stmt*> _s) : Stmt(BLOCK_STMT)
-	{
-		statements = _s;
-	}
+	BlockStmt() : Stmt(BLOCK_STMT) {}
 
 	void Print() override
 	{
 		std::cout << "BLOCK |\n{\n";
-		for (Stmt* s : statements)
+		for (std::unique_ptr<Stmt>& s : statements)
 		{
 			s->Print();
 		}
@@ -134,16 +130,16 @@ struct BlockStmt : public Stmt
 
 struct IfStmt : public Stmt
 {	
-	Expr* condition = nullptr;
-	Stmt* then = nullptr; 
+	std::unique_ptr<Expr> condition = nullptr;
+	std::unique_ptr<Stmt> then = nullptr;
 
-	Stmt* else_branch = nullptr;
+	std::unique_ptr<Stmt> else_branch = nullptr;
 
-	IfStmt(Expr* _condition, Stmt* _then, Stmt* _else_branch) : Stmt(IF_STMT)
+	IfStmt(std::unique_ptr<Expr> _condition, std::unique_ptr<Stmt> _then, std::unique_ptr<Stmt> _else_branch) : Stmt(IF_STMT)
 	{
-		condition = _condition;
-		then = _then;
-		else_branch = _else_branch;
+		condition = std::move(_condition);
+		then = std::move(_then);
+		else_branch = std::move(_else_branch);
 	}
 
 	void Print() override
@@ -165,12 +161,12 @@ struct IfStmt : public Stmt
 struct ValStmt : public Stmt
 {
 	std::string name = "";
-	Expr* expr = nullptr;
+	std::unique_ptr<Expr> expr = nullptr;
 
-	ValStmt(std::string _name, Expr* _expr) : Stmt(VAL_STMT)
+	ValStmt(std::string _name, std::unique_ptr<Expr> _expr) : Stmt(VAL_STMT)
 	{
 		name = _name;
-		expr = _expr;
+		expr = std::move(_expr);
 	}
 
 	void Print() override
@@ -213,11 +209,11 @@ struct Variable : public Expr
 
 struct Grouping : public Expr
 {
-	Expr* expr = nullptr;
+	std::unique_ptr<Expr> expr = nullptr;
 
-	Grouping(Expr* _expr) : Expr(GROUPING)
+	Grouping(std::unique_ptr<Expr> _expr) : Expr(GROUPING)
 	{
-		expr = _expr;
+		expr = std::move(_expr);
 	}
 
 	void Print() override
@@ -231,12 +227,12 @@ struct Grouping : public Expr
 struct Unary : public Expr
 {
 	std::string symbol = "";
-	Expr* right = nullptr;
+	std::unique_ptr<Expr> right = nullptr;
 
-	Unary(std::string _symbol, Expr* _right) : Expr(UNARY)
+	Unary(std::string _symbol, std::unique_ptr<Expr> _right) : Expr(UNARY)
 	{
 		symbol = _symbol;
-		right = _right;
+		right = std::move(_right);
 	}
 
 	void Print() override
@@ -248,13 +244,13 @@ struct Unary : public Expr
 
 struct Binary : public Expr
 {
-	Expr* left = nullptr;
+	std::unique_ptr<Expr> left = nullptr;
 	std::string op = "";
-	Expr* right = nullptr;
+	std::unique_ptr<Expr> right = nullptr;
 
-	Binary(Expr* _left, std::string _op, Expr* _right) : Expr(BINARY)
+	Binary(std::unique_ptr<Expr> _left, std::string _op, std::unique_ptr<Expr> _right) : Expr(BINARY)
 	{
-		left = _left; op = _op; right = _right;
+		left = std::move(_left); op = _op; right = std::move(_right);
 	}
 
 	void Print() override
@@ -270,7 +266,7 @@ struct Parser
 	int current = 0;
 
 	std::vector<Token> tokens = {};
-	std::vector<Stmt*> statements = {};
+	std::vector<std::unique_ptr<Stmt>> statements = {};
 
 public:
 	Parser(std::vector<Token> tokenList) { tokens = tokenList; };
@@ -310,17 +306,17 @@ public:
 	void Parse();
 
 private:
-	Stmt* ParseStmt();
-	Stmt* ParseAssignement();
-	Stmt* ParseParam();
+	std::unique_ptr<Stmt> ParseStmt();
+	std::unique_ptr<Stmt> ParseAssignement();
+	std::unique_ptr<Stmt> ParseParam();
 
-	Stmt* ParseVal();
-	Stmt* ParseTroop();
-	Stmt* ParseBlock();
-	Stmt* ParseIf();
+	std::unique_ptr<Stmt> ParseVal();
+	std::unique_ptr<Stmt> ParseTroop();
+	std::unique_ptr<Stmt> ParseBlock();
+	std::unique_ptr<Stmt> ParseIf();
 
-	Expr* ParseExpr(int min_binding_power = 1);
+	std::unique_ptr<Expr> ParseExpr(int min_binding_power = 1);
 
 	int BindingPower(Token* op);
-	Expr* Prefix();
+	std::unique_ptr<Expr> Prefix();
 };
