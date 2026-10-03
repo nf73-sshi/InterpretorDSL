@@ -30,6 +30,11 @@ struct Token
 	TokenType type;
 	std::string_view lexeme;
 	Pos pos;
+
+	std::string GetLexeme() const
+	{
+		return std::string(lexeme.data(), lexeme.size());
+	}
 };
 
 struct Lexer

@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include "Debug.h"
 
 void Parser::Parse()
 {
@@ -6,34 +7,47 @@ void Parser::Parse()
     {
         statements.push_back(ParseStmt());
     }
+
+    for (Stmt* stmt : statements)
+    {
+        stmt->Print();
+    }
 }
 
 Stmt* Parser::ParseStmt()
 {
     Stmt* stmt = nullptr;
-    Token& current = Peek();
+    Token* current = Peek();
 
-    switch (current.type)
+    switch (current->type)
     {
+    case TokenType::TROOP:
+        if (Next()->type == TokenType::IDENTIFIER)
+        {
+            stmt = ParseTroop();
+            break;
+        }
     case TokenType::IDENTIFIER:
-        if (Next().type == TokenType::ASSIGN)
+        if (Next()->type == TokenType::ASSIGN)
         {
             stmt = ParseAssignement();
+            break;
         }
-        break;
     }
+
+    if (stmt == nullptr)
+        Debug::FatalError("Invalid Statement !");
 
     return stmt;
 }
 
 Expr* Parser::ParseExpr(int min_binding_power)
 {
-    Advance();
-    Expr* left = Prefix();                  // littéral, variable, appel, (expr), -x, !x
+    Expr* left = Prefix();
     
     while(true)
     {
-        Token op = Peek();
+        Token* op = Peek();
         int bp = BindingPower(op);          // || 1, && 2, == != 3, < <= > >= 4, + - 5, * / % 6
 
         if (bp < min_binding_power || bp == 0)
@@ -41,7 +55,7 @@ Expr* Parser::ParseExpr(int min_binding_power)
 
         Advance();
         auto rhs = ParseExpr(bp + 1);       // bp + 1 : associativité à gauche
-        left = new Binary(left, op.lexeme.data(), rhs);
+        left = new Binary(left, op->GetLexeme(), rhs);
     }
 
     return left;
@@ -49,12 +63,67 @@ Expr* Parser::ParseExpr(int min_binding_power)
 
 Stmt* Parser::ParseAssignement()
 {
-    return nullptr;
+    Token* current = Advance(); //identifier
+    Advance();
+
+    AssignStmt* assign = new AssignStmt(current->GetLexeme(), ParseExpr());
+
+    return assign;
 }
 
-int Parser::BindingPower(Token op)
+Stmt* Parser::ParseParam()
 {
-    TokenType type = op.type;
+    Token* val = Advance();
+
+    if (val->type != TokenType::IDENTIFIER)
+    {
+        Debug::SyntaxError(val, "IDENTIFIER EXPECTED");
+        return nullptr;
+    }
+
+    Token* colon = Advance();
+
+    if (colon->type != TokenType::COLON)
+    {
+        Debug::SyntaxError(colon, "COLON EXPECTED");
+        return nullptr;
+    }
+
+    ParamStmt* param = new ParamStmt(val->GetLexeme(), ParseExpr());
+    return param;
+}
+
+Stmt* Parser::ParseTroop()
+{
+    Advance(); //Troop
+    Token* id = Advance(); //identifier
+
+    std::vector<ParamStmt*> params = {};
+
+    Token* op = Advance(); //=
+
+    if (op == nullptr || op->type != TokenType::ASSIGN)
+    {
+        Debug::SyntaxError(id, "EXPECTED ASSIGNEMENT ");
+        return nullptr;
+    }
+
+    for (int i = 0; i < 8; ++i) // There are 8 params in the troop 
+    {
+        params.push_back(dynamic_cast<ParamStmt*>(ParseParam()));
+    }
+ 
+    TroopStmt* troop = new TroopStmt(id->GetLexeme(), params);
+
+    return troop;
+}
+
+int Parser::BindingPower(Token* op)
+{
+    if (op == nullptr)
+        return 0;
+
+    TokenType type = op->type;
 
     if (type == EQUAL || type == NOTEQUAL)
         return 3;
@@ -68,26 +137,37 @@ int Parser::BindingPower(Token op)
     else if (type == MUL || type == DIV)
         return 6;
 
-    return -1;
+    return 0;
 }
 
 Expr* Parser::Prefix()
 {
-    Token& current = Peek();
+    Token* current = Peek();
 
-    switch (current.type)
+    switch (current->type)
     {
     case TokenType::NUMBER:
-        return new Literal(std::stof(current.lexeme.data()));
+        Advance();
+        return new Literal(std::stof(current->GetLexeme()));
+
+    case TokenType::TRUE:
+        Advance();
+        return new Literal(1);
+
+    case TokenType::FALSE:
+        Advance();
+        return new Literal(0);
 
     case TokenType::IDENTIFIER:
-        return new Variable(current.lexeme.data());
+        Advance();
+        return new Variable(current->GetLexeme());
 
     case TokenType::SUB:
     case TokenType::NOT:
-        return new Unary(current.lexeme.data(), nullptr);
+        Advance();
+        Expr* right = ParseExpr(BindingPower(current));
 
-
+        return new Unary(current->GetLexeme(), right);
     }
 
     return nullptr;

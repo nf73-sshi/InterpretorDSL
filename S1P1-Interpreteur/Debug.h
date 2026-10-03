@@ -5,6 +5,7 @@
 #define RESET "\033[39m"
 
 #include <iostream>
+#include "Lexer.h"
 
 struct Debug
 {
@@ -13,6 +14,8 @@ struct Debug
 
 	template<typename ...Args>
 	static void FatalError(Args&& ... terms);
+
+	static void SyntaxError(Token* t, const char* message);
 };
 
 template<typename ...Args>
@@ -27,3 +30,4 @@ inline void Debug::FatalError(Args&& ... terms)
 	(std::cerr << ... << terms) << std::endl;
 	abort();
 }
+

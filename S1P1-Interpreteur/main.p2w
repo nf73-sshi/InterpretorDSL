@@ -1,10 +1,3 @@
-Troop ebarb = {1, 2, 3, 4, 5, 6, 7, 8}
-val random_calcul = (7 - 3) * 5 / 10
-
-if ebarb.pv == 69 + 420:
-finish = true
-return
-
-x1=x2=x3
-
-finish = false
+Troop ebarb = cost:6 hp:1700 dmg:500 radius:3 fatkspeed:0.5 atkspeed:2.1 speed:10 range:1
+ebarb = true
+ 

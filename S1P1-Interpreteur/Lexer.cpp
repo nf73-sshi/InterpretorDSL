@@ -179,8 +179,10 @@ void Lexer::Tokenize(const char* path)
 			std::cout << std::endl;
 		}
 
-		std::cout << RESET << "[" << COLOR << tokens[i].lexeme << RESET << "] ";
+		std::cout << RESET << "[" << COLOR << tokens[i].GetLexeme() << RESET << "] ";
 	}
+
+	std::cout << "\n\n";
 }
 
 char Lexer::GetNextChar()

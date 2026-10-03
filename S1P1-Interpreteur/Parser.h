@@ -1,8 +1,8 @@
-	#pragma once
+#pragma once
 #include <string>
 #include <vector>
 #include "Lexer.h"
-
+#include <iostream>
 
 enum StmtType
 {
@@ -26,75 +26,7 @@ struct Stmt
 		type = stmt;
 	}
 	virtual ~Stmt() = default;
-};
-
-struct Assign : public Stmt
-{
-	const char* name = "";
-	Expr* expr = nullptr;
-
-	Assign(const char* _name, Expr* _expr) : Stmt(ASSIGN_STMT)
-	{
-		name = _name; expr = _expr;
-	}
-};
-
-struct Param : public Stmt
-{
-	const char* name = "";
-	Expr* right;
-
-	Param(const char* _name ,Expr* _right) : Stmt(PARAM_STMT)
-	{
-		name = _name;
-		right = _right;
-	}
-};
-
-struct Troop : public Stmt
-{
-	const char* var_name = "";
-	std::vector<Param*> params;
-
-	Troop(const char* _var_name, std::vector<Param*> _params) : Stmt(TROOP_STMT)
-	{
-		var_name = _var_name;
-		params = _params;
-	}
-};
-
-struct ElseStmt : public Stmt
-{
-	Stmt* stmt = nullptr;
-
-	ElseStmt(Stmt* _stmt) : Stmt(ELSE_STMT)
-	{
-		stmt = _stmt;
-	}
-};
-
-struct ElifStmt : public Stmt
-{
-	Expr* condition = nullptr;
-	Stmt* stmt = nullptr;
-
-	ElifStmt(Expr* _condition, Stmt* _stmt) : Stmt(ELIF_STMT)
-	{
-		condition = _condition;
-		stmt = _stmt;
-	}
-};
-
-struct IfStmt : public Stmt
-{	
-	Expr* condition = nullptr;
-	Stmt* stmt = nullptr; 
-
-	IfStmt(Expr* _condition, Stmt* _stmt) : Stmt(IF_STMT)
-	{
-		condition = _condition;
-		stmt = _stmt;
-	}
+	virtual void Print() = 0;
 };
 
 enum ExprType
@@ -117,6 +49,123 @@ struct Expr
 		type = _type;
 	}
 	virtual ~Expr() = default;
+	virtual void Print() = 0;
+};
+
+struct AssignStmt : public Stmt
+{
+	std::string name = "";
+	Expr* expr = nullptr;
+
+	AssignStmt(std::string _name, Expr* _expr) : Stmt(ASSIGN_STMT)
+	{
+		name = _name; expr = _expr;
+	}
+
+	void Print() override
+	{
+		std::cout << "ASSIGNEMENT | " << name << " = ";
+		expr->Print();
+		std::cout << "\n";
+	}
+};
+
+struct ParamStmt : public Stmt
+{
+	std::string name = "";
+	Expr* expr;
+
+	ParamStmt(std::string _name ,Expr* _expr) : Stmt(PARAM_STMT)
+	{
+		name = _name;
+		expr = _expr;
+	}
+
+	void Print() override
+	{
+		std::cout << "PARAM | " << name << ": ";
+		expr->Print();
+		std::cout << "\n";
+	}
+};
+
+struct TroopStmt : public Stmt
+{
+	std::string var_name = "";
+	std::vector<ParamStmt*> params;
+
+	TroopStmt(std::string _var_name, std::vector<ParamStmt*> _params) : Stmt(TROOP_STMT)
+	{
+		var_name = _var_name;
+		params = _params;
+	}
+
+	void Print() override
+	{
+		std::cout << "TROOP | " << var_name << " = ";
+		for (ParamStmt* p : params)
+		{
+			p->Print();
+		}
+		std::cout << "\n";
+	}
+};
+
+struct ElseStmt : public Stmt
+{
+	Stmt* stmt = nullptr;
+
+	ElseStmt(Stmt* _stmt) : Stmt(ELSE_STMT)
+	{
+		stmt = _stmt;
+	}
+
+	void Print() override
+	{
+		std::cout << "ELSE | ";
+		stmt->Print();
+		std::cout << "\n";
+	}
+};
+
+struct ElifStmt : public Stmt
+{
+	Expr* condition = nullptr;
+	Stmt* stmt = nullptr;
+
+	ElifStmt(Expr* _condition, Stmt* _stmt) : Stmt(ELIF_STMT)
+	{
+		condition = _condition;
+		stmt = _stmt;
+	}
+
+	void Print() override
+	{
+		std::cout << "ELIF | ";
+		condition->Print();
+		stmt->Print();
+		std::cout << "\n";
+	}
+};
+
+struct IfStmt : public Stmt
+{	
+	Expr* condition = nullptr;
+	Stmt* stmt = nullptr; 
+
+	IfStmt(Expr* _condition, Stmt* _stmt) : Stmt(IF_STMT)
+	{
+		condition = _condition;
+		stmt = _stmt;
+	}
+
+	void Print() override
+	{
+		std::cout << "IF | ";
+		condition->Print();
+		stmt->Print();
+		std::cout << "\n";
+	}
 };
 
 struct Literal : public Expr
@@ -127,38 +176,62 @@ struct Literal : public Expr
 	{
 		value = _value;
 	}
+
+	void Print() override
+	{
+		std::cout << value;
+	}
 };
 
 struct Variable : public Expr
 {
-	const char* name = "";
+	std::string name = "";
 
-	Variable(const char* _name) : Expr(VARIABLE)
+	Variable(std::string _name) : Expr(VARIABLE)
 	{
 		name = _name;
+	}
+
+	void Print() override
+	{
+		std::cout << name;
 	}
 };
 
 struct Unary : public Expr
 {
-	const char* symbol = "";
+	std::string symbol = "";
 	Expr* right = nullptr;
 
-	Unary(const char* _symbol, Expr* _right) : Expr(UNARY)
+	Unary(std::string _symbol, Expr* _right) : Expr(UNARY)
 	{
+		symbol = _symbol;
 		right = _right;
+	}
+
+	void Print() override
+	{
+		std::cout << symbol;
+		right->Print();
 	}
 };
 
 struct Binary : public Expr
 {
 	Expr* left = nullptr;
-	const char* op = "";
+	std::string op = "";
 	Expr* right = nullptr;
 
-	Binary(Expr* _left, const char* _op, Expr* _right) : Expr(BINARY)
+	Binary(Expr* _left, std::string _op, Expr* _right) : Expr(BINARY)
 	{
 		left = _left; op = _op; right = _right;
+	}
+
+	void Print() override
+	{
+		left->Print();
+		std::cout << " " << op << " ";
+		right->Print();
 	}
 };
 
@@ -171,22 +244,38 @@ struct Parser
 
 public:
 	Parser(std::vector<Token> tokenList) { tokens = tokenList; };
-	Token& Peek() { return tokens[current]; }
-	
-	Token& Advance()
-	{
-		return tokens[current++];
-	}
-	Token& Previous()
-	{
-		return tokens[current-1];
-	}
-	Token& Next()
-	{
-		return tokens[current+1];
-	}
 
-	TokenType Check() { return Peek().type; }
+	bool IsAtEnd() const { return current >= tokens.size() || current < 0; }
+
+	Token* Peek() 
+	{ 
+		if (IsAtEnd())
+			return nullptr;
+		
+		return &tokens[current]; 
+	}
+	
+	Token* Advance()
+	{
+		if (IsAtEnd())
+			return nullptr;
+
+		return &tokens[current++];
+	}
+	Token* Previous()
+	{
+		if (IsAtEnd())
+			return nullptr;
+
+		return &tokens[current-1];
+	}
+	Token* Next()
+	{
+		if (IsAtEnd())
+			return nullptr;
+
+		return &tokens[current+1];
+	}
 
 	void Parse();
 
@@ -196,6 +285,9 @@ private:
 
 	Stmt* ParseAssignement();
 
-	int BindingPower(Token op);
+	Stmt* ParseParam();
+	Stmt* ParseTroop();
+
+	int BindingPower(Token* op);
 	Expr* Prefix();
 };
