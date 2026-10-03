@@ -3,172 +3,149 @@
 #include <vector>
 #include "Lexer.h"
 
-enum NodeType
-{
-	NODE_NONE,
-	EXPR,
-	ASSIGN,
-	PARAM,
-	TROOP_NODE,
-	BLOCK,
-	STMT
-};
+
 enum StmtType
 {
-	STMT_NONE,
-	STMT_IF,
-	STMT_ELSE,
-	STMT_ELIF
-};
-enum ExprType
-{
-	EXPR_NONE, 
+	ASSIGN_STMT,
 
-	LITERAL,
-	UNARY,
-	BINARY,
+	IF_STMT,
+	ELIF_STMT,
+	ELSE_STMT,
+
+	PARAM_STMT,
+
+	TROOP_STMT,
 };
 
+struct Stmt
+{	
+	StmtType type;
 
-struct Node
-{
-	NodeType node_type = NODE_NONE;
-};
-
-struct Stmt : public Node
-{
-	Token id;
-	
-	StmtType stmt_type;
-};
-
-struct Assign : public Node
-{
-	Token id; //identifier
-	Token op;
-	Expr* expr;
-
-	Assign(Token _id, Token _op, Expr* _expr)
+	Stmt(StmtType stmt)
 	{
-		node_type = ASSIGN;
-		id = _id; op = _op; expr = _expr;
+		type = stmt;
+	}
+	virtual ~Stmt() = default;
+};
+
+struct Assign : public Stmt
+{
+	const char* name = "";
+	Expr* expr = nullptr;
+
+	Assign(const char* _name, Expr* _expr) : Stmt(ASSIGN_STMT)
+	{
+		name = _name; expr = _expr;
 	}
 };
 
-struct Block : public Node
+struct Param : public Stmt
 {
-	Token id;
-	std::vector<Expr*> exprList;
-	Block(Token _id, std::vector<Expr*> _exprList)
-	{
-		node_type = BLOCK;
-		id = _id;
-		for (Expr* _expr : _exprList)
-		{
-			exprList.push_back(_expr);
-		}
-	}
-};
-
-struct Param : public Node
-{
-	Token id;
+	const char* name = "";
 	Expr* right;
-	Param(Token _id ,Expr* _right)
+
+	Param(const char* _name ,Expr* _right) : Stmt(PARAM_STMT)
 	{
-		node_type = PARAM;
-		id = _id;
+		name = _name;
 		right = _right;
 	}
 };
 
-struct Troop : public Node
+struct Troop : public Stmt
 {
-	Token id;
-	std::vector<Expr*> expList;
-	Troop(Token _id, std::vector<Param> _expList)
+	const char* var_name = "";
+	std::vector<Param*> params;
+
+	Troop(const char* _var_name, std::vector<Param*> _params) : Stmt(TROOP_STMT)
 	{
-		node_type = TROOP_NODE;
-		id = _id;
-		for (Param p : _expList)
-		{
-			expList.push_back(p.right);
-		}
+		var_name = _var_name;
+		params = _params;
 	}
 };
+
 struct ElseStmt : public Stmt
 {
-	Block* block;
+	Stmt* stmt = nullptr;
 
-	ElseStmt(Token _id, Block* _block)
+	ElseStmt(Stmt* _stmt) : Stmt(ELSE_STMT)
 	{
-		node_type = STMT;
-		stmt_type = STMT_ELSE;
-		id = _id;
-		block = _block;
+		stmt = _stmt;
 	}
-};
-struct IfStmt : public Stmt
-{	
-	Expr* parametrer;
-	Block* block;
-
-	IfStmt(Token _id, Expr* _parametrer, Block* _block)
-	{
-		node_type = STMT;
-		stmt_type = STMT_IF;
-		id = _id;
-		parametrer = _parametrer;
-		block = _block;
-	}
-
 };
 
 struct ElifStmt : public Stmt
 {
-	Expr* parameter;
-	Block* block;
+	Expr* condition = nullptr;
+	Stmt* stmt = nullptr;
 
-	ElifStmt(Token _id, Expr* _parameter, Block* _block)
+	ElifStmt(Expr* _condition, Stmt* _stmt) : Stmt(ELIF_STMT)
 	{
-		node_type = STMT;
-		stmt_type = STMT_IF;
-		id = _id;
-		parameter = _parameter;
-		block = _block;
+		condition = _condition;
+		stmt = _stmt;
 	}
-
 };
 
-struct Expr : public Node
+struct IfStmt : public Stmt
+{	
+	Expr* condition = nullptr;
+	Stmt* stmt = nullptr; 
+
+	IfStmt(Expr* _condition, Stmt* _stmt) : Stmt(IF_STMT)
+	{
+		condition = _condition;
+		stmt = _stmt;
+	}
+};
+
+enum ExprType
+{
+	EXPR_NONE,
+
+	LITERAL,
+	VARIABLE,
+
+	UNARY,
+	BINARY,
+};
+
+struct Expr
 {
 	ExprType type = EXPR_NONE;
 
-	Expr()
+	Expr(ExprType _type)
 	{
-		node_type = EXPR;
+		type = _type;
 	}
+	virtual ~Expr() = default;
 };
 
 struct Literal : public Expr
 {
-	Token token;
+	float value = 0;
 
-	Literal(Token _token)
+	Literal(float _value) : Expr(LITERAL)
 	{
-		type = LITERAL;
-		token = _token;
+		value = _value;
+	}
+};
+
+struct Variable : public Expr
+{
+	const char* name = "";
+
+	Variable(const char* _name) : Expr(VARIABLE)
+	{
+		name = _name;
 	}
 };
 
 struct Unary : public Expr
 {
-	char symbol = ' ';
+	const char* symbol = "";
 	Expr* right = nullptr;
 
-	Unary(char _symbol, Expr* _right)
+	Unary(const char* _symbol, Expr* _right) : Expr(UNARY)
 	{
-		type = UNARY;
 		right = _right;
 	}
 };
@@ -176,23 +153,49 @@ struct Unary : public Expr
 struct Binary : public Expr
 {
 	Expr* left = nullptr;
-	Token op;
+	const char* op = "";
 	Expr* right = nullptr;
 
-	Binary(Expr* _left, Token _op, Expr* _right)
+	Binary(Expr* _left, const char* _op, Expr* _right) : Expr(BINARY)
 	{
-		type = BINARY;
 		left = _left; op = _op; right = _right;
 	}
 };
 
 struct Parser
 {
-	int m_actual = 0;
-	std::vector<Token> m_tokenList;
+	int current = 0;
+
+	std::vector<Token> tokens = {};
+	std::vector<Stmt*> statements = {};
+
 public:
-	Parser(std::vector<Token> tokenList) { m_tokenList = tokenList; };
-	Token peek() { return m_tokenList[m_actual]; }
-	Token previous() { return m_tokenList[m_actual - 1]; }
-	bool check(TokenType type) { return peek().type; }
+	Parser(std::vector<Token> tokenList) { tokens = tokenList; };
+	Token& Peek() { return tokens[current]; }
+	
+	Token& Advance()
+	{
+		return tokens[current++];
+	}
+	Token& Previous()
+	{
+		return tokens[current-1];
+	}
+	Token& Next()
+	{
+		return tokens[current+1];
+	}
+
+	TokenType Check() { return Peek().type; }
+
+	void Parse();
+
+private:
+	Stmt* ParseStmt();
+	Expr* ParseExpr(int min_binding_power = 1);
+
+	Stmt* ParseAssignement();
+
+	int BindingPower(Token op);
+	Expr* Prefix();
 };

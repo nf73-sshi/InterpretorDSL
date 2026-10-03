@@ -1,12 +1,17 @@
 #include <iostream>
-#include "Lexer.h"
 #include <fstream>
 #include <sstream>
 #include <regex>
+
+#include "Lexer.h"
+#include "Parser.h"
 //
 
 int main()
 {
-    Lexer l;
-    l.Tokenize("main.p2w");
+    Lexer lexer;
+    lexer.Tokenize("main.p2w");
+
+    Parser parser(lexer.tokens);
+    parser.Parse();
 }
