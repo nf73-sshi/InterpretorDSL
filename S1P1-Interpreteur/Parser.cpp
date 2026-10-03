@@ -21,18 +21,34 @@ Stmt* Parser::ParseStmt()
 
     switch (current->type)
     {
+    case TokenType::IF:
+        stmt = ParseIf();
+        break;
+
+    case TokenType::LBRACKET:
+        stmt = ParseBlock();
+        break;
+
+    case TokenType::VAL:
+        if (Next()->type == TokenType::IDENTIFIER)
+        {
+            stmt = ParseVal();
+        }
+        break;
+
     case TokenType::TROOP:
         if (Next()->type == TokenType::IDENTIFIER)
         {
             stmt = ParseTroop();
-            break;
         }
+        break;
+
     case TokenType::IDENTIFIER:
         if (Next()->type == TokenType::ASSIGN)
         {
             stmt = ParseAssignement();
-            break;
         }
+        break;
     }
 
     if (stmt == nullptr)
@@ -93,6 +109,17 @@ Stmt* Parser::ParseParam()
     return param;
 }
 
+Stmt* Parser::ParseVal()
+{
+    Advance(); //Val
+    Token* id = Advance(); //identifier
+    Advance(); // =
+
+    ValStmt* val = new ValStmt(id->GetLexeme(), ParseExpr());
+
+    return val;
+}
+
 Stmt* Parser::ParseTroop()
 {
     Advance(); //Troop
@@ -116,6 +143,50 @@ Stmt* Parser::ParseTroop()
     TroopStmt* troop = new TroopStmt(id->GetLexeme(), params);
 
     return troop;
+}
+
+Stmt* Parser::ParseBlock()
+{
+    std::vector<Stmt*> statements = {};
+    Advance();
+
+    while (true)
+    {
+        Token* current = Peek();
+
+        if (current->type == TokenType::RBRACKET)
+        {
+            Advance();
+            break;
+        }
+
+        statements.push_back(ParseStmt());
+    }
+
+    BlockStmt* block = new BlockStmt(statements);
+
+    return block;
+}
+
+Stmt* Parser::ParseIf()
+{
+    Advance(); //IF
+    Expr* condition = ParseExpr();
+
+    Stmt* then = ParseStmt();
+
+    Token* else_t = Advance();
+
+    Stmt* else_then = nullptr;
+
+    if (else_t != nullptr && else_t->type == TokenType::ELSE)
+    {
+        else_then = ParseStmt();
+    }
+
+    IfStmt* if_s = new IfStmt(condition, then, else_then);
+
+    return if_s;
 }
 
 int Parser::BindingPower(Token* op)
@@ -144,8 +215,24 @@ Expr* Parser::Prefix()
 {
     Token* current = Peek();
 
+    if (current->type == TokenType::LPARENTHESIS)
+    {
+       Advance(); // (
+       Expr* expr = ParseExpr(0);
+
+       if (Peek()->type == TokenType::RPARENTHESIS)
+       {
+           Advance(); // )
+           return new Grouping(expr);
+       }
+
+       return nullptr;
+    }
+
     switch (current->type)
     {
+ 
+
     case TokenType::NUMBER:
         Advance();
         return new Literal(std::stof(current->GetLexeme()));

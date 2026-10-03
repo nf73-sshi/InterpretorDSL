@@ -7,14 +7,14 @@
 enum StmtType
 {
 	ASSIGN_STMT,
+	BLOCK_STMT,
 
 	IF_STMT,
-	ELIF_STMT,
-	ELSE_STMT,
 
 	PARAM_STMT,
 
 	TROOP_STMT,
+	VAL_STMT
 };
 
 struct Stmt
@@ -36,6 +36,7 @@ enum ExprType
 	LITERAL,
 	VARIABLE,
 
+	GROUPING,
 	UNARY,
 	BINARY,
 };
@@ -111,59 +112,71 @@ struct TroopStmt : public Stmt
 	}
 };
 
-struct ElseStmt : public Stmt
+struct BlockStmt : public Stmt
 {
-	Stmt* stmt = nullptr;
+	std::vector<Stmt*> statements;
 
-	ElseStmt(Stmt* _stmt) : Stmt(ELSE_STMT)
+	BlockStmt(std::vector<Stmt*> _s) : Stmt(BLOCK_STMT)
 	{
-		stmt = _stmt;
+		statements = _s;
 	}
 
 	void Print() override
 	{
-		std::cout << "ELSE | ";
-		stmt->Print();
-		std::cout << "\n";
-	}
-};
-
-struct ElifStmt : public Stmt
-{
-	Expr* condition = nullptr;
-	Stmt* stmt = nullptr;
-
-	ElifStmt(Expr* _condition, Stmt* _stmt) : Stmt(ELIF_STMT)
-	{
-		condition = _condition;
-		stmt = _stmt;
-	}
-
-	void Print() override
-	{
-		std::cout << "ELIF | ";
-		condition->Print();
-		stmt->Print();
-		std::cout << "\n";
+		std::cout << "BLOCK |\n{\n";
+		for (Stmt* s : statements)
+		{
+			s->Print();
+		}
+		std::cout << "}\n";
 	}
 };
 
 struct IfStmt : public Stmt
 {	
 	Expr* condition = nullptr;
-	Stmt* stmt = nullptr; 
+	Stmt* then = nullptr; 
 
-	IfStmt(Expr* _condition, Stmt* _stmt) : Stmt(IF_STMT)
+	Stmt* else_branch = nullptr;
+
+	IfStmt(Expr* _condition, Stmt* _then, Stmt* _else_branch) : Stmt(IF_STMT)
 	{
 		condition = _condition;
-		stmt = _stmt;
+		then = _then;
+		else_branch = _else_branch;
 	}
 
 	void Print() override
 	{
 		std::cout << "IF | ";
 		condition->Print();
-		stmt->Print();
+		std::cout << "\n";
+		then->Print();
+
+		if (else_branch != nullptr)
+		{
+			std::cout << "ELSE | ";
+			else_branch->Print();
+		}
+		std::cout << "\n";
+	}
+};
+
+struct ValStmt : public Stmt
+{
+	std::string name = "";
+	Expr* expr = nullptr;
+
+	ValStmt(std::string _name, Expr* _expr) : Stmt(VAL_STMT)
+	{
+		name = _name;
+		expr = _expr;
+	}
+
+	void Print() override
+	{
+		std::cout << "VAL | " << name << " = ";
+		expr->Print();
 		std::cout << "\n";
 	}
 };
@@ -195,6 +208,23 @@ struct Variable : public Expr
 	void Print() override
 	{
 		std::cout << name;
+	}
+};
+
+struct Grouping : public Expr
+{
+	Expr* expr = nullptr;
+
+	Grouping(Expr* _expr) : Expr(GROUPING)
+	{
+		expr = _expr;
+	}
+
+	void Print() override
+	{
+		std::cout << "(";
+		expr->Print();
+		std::cout << ")";
 	}
 };
 
@@ -281,12 +311,15 @@ public:
 
 private:
 	Stmt* ParseStmt();
-	Expr* ParseExpr(int min_binding_power = 1);
-
 	Stmt* ParseAssignement();
-
 	Stmt* ParseParam();
+
+	Stmt* ParseVal();
 	Stmt* ParseTroop();
+	Stmt* ParseBlock();
+	Stmt* ParseIf();
+
+	Expr* ParseExpr(int min_binding_power = 1);
 
 	int BindingPower(Token* op);
 	Expr* Prefix();
