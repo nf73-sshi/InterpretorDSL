@@ -2,61 +2,57 @@
 
 void Parser::Parse()
 {
-    while (actual < tokens.size())
+    while (current < tokens.size())
     {
-        Node* p_node = nullptr;
-
-        Token& current = peek();
-        Token& next = Parser::next();
-
-        switch (current.type)
-        {
-        case IDENTIFIER:
-            switch (next.type)
-            {
-            case ASSIGN:
-                p_node = parse_assign();
-                break;
-            }
-
-            break;
-
-       
-        }
-
-        if(p_node != nullptr)
-            nodes.push_back(p_node);
+        statements.push_back(ParseStmt());
     }
 }
 
-Assign* Parser::parse_assign()
+Stmt* Parser::ParseStmt()
 {
-    Assign* result = new Assign(peek(), advance(), parse_expr());
-    return result;
+    Stmt* stmt = nullptr;
+    Token& current = Peek();
+
+    switch (current.type)
+    {
+    case TokenType::IDENTIFIER:
+        if (Next().type == TokenType::ASSIGN)
+        {
+            stmt = ParseAssignement();
+        }
+        break;
+    }
+
+    return stmt;
 }
 
-Expr* Parser::parse_expr(int min_binding_power)
+Expr* Parser::ParseExpr(int min_binding_power)
 {
-    advance();
-    Expr* left = prefix();                  // littéral, variable, appel, (expr), -x, !x
+    Advance();
+    Expr* left = Prefix();                  // littéral, variable, appel, (expr), -x, !x
     
     while(true)
     {
-        Token op = peek();
-        int bp = binding_power(op);          // || 1, && 2, == != 3, < <= > >= 4, + - 5, * / % 6
+        Token op = Peek();
+        int bp = BindingPower(op);          // || 1, && 2, == != 3, < <= > >= 4, + - 5, * / % 6
 
         if (bp < min_binding_power || bp == 0)
             break;
 
-        advance();
-        auto rhs = parse_expr(bp + 1);       // bp + 1 : associativité à gauche
-        left = new Binary(left, op, rhs);
+        Advance();
+        auto rhs = ParseExpr(bp + 1);       // bp + 1 : associativité à gauche
+        left = new Binary(left, op.lexeme.data(), rhs);
     }
 
     return left;
 }
 
-int Parser::binding_power(Token op)
+Stmt* Parser::ParseAssignement()
+{
+    return nullptr;
+}
+
+int Parser::BindingPower(Token op)
 {
     TokenType type = op.type;
 
@@ -75,17 +71,17 @@ int Parser::binding_power(Token op)
     return -1;
 }
 
-Expr* Parser::prefix()
+Expr* Parser::Prefix()
 {
-    Token& current = peek();
+    Token& current = Peek();
 
     switch (current.type)
     {
     case TokenType::NUMBER:
-        return new Literal(current);
+        return new Literal(std::stof(current.lexeme.data()));
 
     case TokenType::IDENTIFIER:
-        return new Variable(current);
+        return new Variable(current.lexeme.data());
 
     case TokenType::SUB:
     case TokenType::NOT:

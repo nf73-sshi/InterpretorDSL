@@ -30,15 +30,11 @@ struct Token
 	TokenType type;
 	std::string_view lexeme;
 	Pos pos;
-
 };
-
-
 
 struct Lexer
 {
 	std::string text = {};
-
 	std::vector<Token> tokens;
 
 	void Tokenize(const char* path);
