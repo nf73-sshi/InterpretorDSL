@@ -10,6 +10,8 @@ enum StmtType
 	BLOCK_STMT,
 
 	IF_STMT,
+	WHILE_STMT,
+	FOR_STMT,
 
 	PARAM_STMT,
 
@@ -158,6 +160,47 @@ struct IfStmt : public Stmt
 	}
 };
 
+struct WhileStmt : public Stmt
+{
+	std::unique_ptr<Expr> condition = nullptr;
+	std::unique_ptr<Stmt> then = nullptr;
+
+	WhileStmt(std::unique_ptr<Expr> _condition, std::unique_ptr<Stmt> _then) : Stmt(WHILE_STMT)
+	{
+		condition = std::move(_condition);
+		then = std::move(_then);
+	}
+
+	void Print() override
+	{
+		std::cout << "WHILE | ";
+		condition->Print();
+		std::cout << "\n";
+		then->Print();
+	}
+};
+
+struct ForStmt : public Stmt
+{
+	std::unique_ptr<Expr> condition = nullptr;
+	std::unique_ptr<Stmt> then = nullptr;
+
+	ForStmt(std::unique_ptr<Expr> _condition, std::unique_ptr<Stmt> _then) : Stmt(FOR_STMT)
+	{
+		condition = std::move(_condition);
+		then = std::move(_then);
+	}
+
+	void Print() override
+	{
+		std::cout << "FOR | ";
+		condition->Print();
+		std::cout << "\n";
+		then->Print();
+	}
+	Expr* GetExpr() { return condition.get(); }
+};
+
 struct ValStmt : public Stmt
 {
 	std::string name = "";
@@ -304,6 +347,8 @@ public:
 	}
 
 	void Parse();
+	void CheckSemantic();
+private:
 
 private:
 	std::unique_ptr<Stmt> ParseStmt();
@@ -314,8 +359,19 @@ private:
 	std::unique_ptr<Stmt> ParseTroop();
 	std::unique_ptr<Stmt> ParseBlock();
 	std::unique_ptr<Stmt> ParseIf();
+	std::unique_ptr<Stmt> ParseWhile();
+	std::unique_ptr<Stmt> ParseFor();
+
 
 	std::unique_ptr<Expr> ParseExpr(int min_binding_power = 1);
+
+	bool SemanticVal(Stmt* stmt);
+	bool SemanticTroop(Stmt* stmt);
+	bool SemanticBlock(Stmt* stmt);
+	bool SemanticIf(Stmt* stmt);
+	bool SemanticWhile(Stmt* stmt);
+	bool SemanticFor(Stmt* stmt);
+	bool SemanticAssignement(Stmt* stmt);
 
 	int BindingPower(Token* op);
 	std::unique_ptr<Expr> Prefix();
