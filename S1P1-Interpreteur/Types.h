@@ -14,4 +14,4 @@ struct alignas(32) Troop
 	float range = 0;
 };
 
-using Object = std::variant<std::monostate, float, bool, Troop>;
+using Object = std::variant<std::monostate, float, Troop>;
