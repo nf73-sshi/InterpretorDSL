@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 
+struct Environment;
+
 struct TreeWalker
 {
 	std::vector<std::unique_ptr<Stmt>> statements;
@@ -15,6 +17,6 @@ struct TreeWalker
 		}
 	}
 
-	void Execute();
+	void Execute(Environment* e);
 };
 

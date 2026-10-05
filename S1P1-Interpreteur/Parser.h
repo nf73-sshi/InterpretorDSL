@@ -4,9 +4,12 @@
 #include "Lexer.h"
 #include <iostream>
 
+#include "Types.h"
+struct Environment;
+
 enum StmtType
 {
-	FUNCTION_STMT,
+	EXPR_STMT,
 	ASSIGN_STMT,
 	BLOCK_STMT,
 
@@ -31,20 +34,20 @@ struct Stmt
 	virtual ~Stmt() = default;
 	virtual void Print() = 0;
 
-	virtual void Evaluate() {};
-	virtual void Execute() {};
+	virtual void Execute(Environment* e) = 0;
 };
 
 enum ExprType
 {
 	EXPR_NONE,
 
+	CALL,
 	LITERAL,
 	VARIABLE,
 
 	GROUPING,
 	UNARY,
-	BINARY,
+	BINARY
 };
 
 struct Expr
@@ -58,42 +61,7 @@ struct Expr
 	virtual ~Expr() = default;
 	virtual void Print() = 0;
 
-	virtual void Eval() = 0;
-	virtual void Execute() = 0;
-};
-
-struct FunctionCallStmt : public Stmt
-{
-	enum FunctionID
-	{
-		FUNC_NONE,
-		SPAWN,
-		SPAWN_MULTIPLE,
-		GET_ALIVE_TROOPS,
-		GET_ALIVE_TROOPS_IN_TEAM,
-		GET_ELAPSED_TIME,
-		TIME_SCALE,
-	};
-
-	FunctionID id = FUNC_NONE;
-	std::string name = "";
-	std::vector<std::unique_ptr<Stmt>> params;
-
-	FunctionCallStmt(FunctionID _id, std::string _name) : Stmt(FUNCTION_STMT)
-	{
-		id = _id;
-		name = _name;
-	}
-
-	void Print() override
-	{
-		std::cout << "FUNCTION | " << name << "(";
-		for (std::unique_ptr<Stmt>& stmt : params)
-		{
-			stmt->Print();
-		}
-		std::cout << ")\n";
-	}
+	virtual Object Eval(Environment* e) = 0;
 };
 
 struct AssignStmt : public Stmt
@@ -112,6 +80,8 @@ struct AssignStmt : public Stmt
 		expr->Print();
 		std::cout << "\n";
 	}
+
+	void Execute(Environment* e) override;
 };
 
 struct ParamStmt : public Stmt
@@ -131,6 +101,8 @@ struct ParamStmt : public Stmt
 		expr->Print();
 		std::cout << "\n";
 	}
+
+	void Execute(Environment* e) override;
 };
 
 struct TroopStmt : public Stmt
@@ -152,6 +124,8 @@ struct TroopStmt : public Stmt
 		}
 		std::cout << "\n";
 	}
+
+	void Execute(Environment* e) override;
 };
 
 struct BlockStmt : public Stmt
@@ -169,6 +143,8 @@ struct BlockStmt : public Stmt
 		}
 		std::cout << "}\n";
 	}
+
+	void Execute(Environment* e) override;
 };
 
 struct IfStmt : public Stmt
@@ -199,6 +175,8 @@ struct IfStmt : public Stmt
 		}
 		std::cout << "\n";
 	}
+
+	void Execute(Environment* e) override;
 };
 
 struct WhileStmt : public Stmt
@@ -219,6 +197,8 @@ struct WhileStmt : public Stmt
 		std::cout << "\n";
 		then->Print();
 	}
+
+	void Execute(Environment* e) override;
 };
 
 struct ForStmt : public Stmt
@@ -242,6 +222,8 @@ struct ForStmt : public Stmt
 		std::cout << "\n"; then->Print();
 		std::cout << "\n";
 	}
+
+	void Execute(Environment* e) override;
 };
 
 struct ValStmt : public Stmt
@@ -261,6 +243,61 @@ struct ValStmt : public Stmt
 		expr->Print();
 		std::cout << "\n";
 	}
+
+	void Execute(Environment* e) override;
+};
+
+struct ExpressionStmt : public Stmt
+{
+	std::unique_ptr<Expr> expr = nullptr;
+
+	ExpressionStmt(std::unique_ptr<Expr> _expr) : Stmt(EXPR_STMT)
+	{
+		expr = std::move(_expr);
+	}
+
+	void Print() override
+	{
+		expr->Print();
+	}
+
+	void Execute(Environment* e) override;
+};
+
+struct Call : public Expr
+{
+	enum ID
+	{
+		FUNC_NONE,
+		SPAWN,
+		SPAWN_MULTIPLE,
+		GET_ALIVE_TROOPS,
+		GET_ALIVE_TROOPS_IN_TEAM,
+		GET_ELAPSED_TIME,
+		TIME_SCALE,
+	};
+
+	ID id = FUNC_NONE;
+	std::string name = "";
+	std::vector<std::unique_ptr<Expr>> params;
+
+	Call(Call::ID _id, std::string _name) : Expr(CALL)
+	{
+		id = _id;
+		name = _name;
+	}
+
+	void Print() override
+	{
+		std::cout << "FUNCTION | " << name << "(";
+		for (std::unique_ptr<Expr>& stmt : params)
+		{
+			stmt->Print();
+		}
+		std::cout << ")\n";
+	}
+
+	Object Eval(Environment* e) override;
 };
 
 struct Literal : public Expr
@@ -277,15 +314,7 @@ struct Literal : public Expr
 		std::cout << value;
 	}
 
-	void Eval() override
-	{
-
-	}
-
-	void Execute() override
-	{
-
-	}
+	Object Eval(Environment* e) override;
 };
 
 struct Variable : public Expr
@@ -302,15 +331,7 @@ struct Variable : public Expr
 		std::cout << name;
 	}
 
-	void Eval() override
-	{
-
-	}
-
-	void Execute() override
-	{
-
-	}
+	Object Eval(Environment* e) override;
 };
 
 struct Grouping : public Expr
@@ -329,15 +350,7 @@ struct Grouping : public Expr
 		std::cout << ")";
 	}
 
-	void Eval() override
-	{
-
-	}
-
-	void Execute() override
-	{
-
-	}
+	Object Eval(Environment* e) override;
 };
 
 struct Unary : public Expr
@@ -357,15 +370,7 @@ struct Unary : public Expr
 		right->Print();
 	}
 
-	void Eval() override
-	{
-
-	}
-
-	void Execute() override
-	{
-
-	}
+	Object Eval(Environment* e) override;
 };
 
 struct Binary : public Expr
@@ -386,15 +391,7 @@ struct Binary : public Expr
 		right->Print();
 	}
 
-	void Eval() override
-	{
-
-	}
-
-	void Execute() override
-	{
-
-	}
+	Object Eval(Environment* e) override;
 };
 
 struct Parser
@@ -443,7 +440,7 @@ public:
 
 private:
 	std::unique_ptr<Stmt> ParseStmt();
-	std::unique_ptr<Stmt> ParseFunctionCall();
+	std::unique_ptr<Stmt> ParseExprStmt();
 	std::unique_ptr<Stmt> ParseAssignement();
 	std::unique_ptr<Stmt> ParseParam();
 
@@ -454,6 +451,7 @@ private:
 	std::unique_ptr<Stmt> ParseWhile();
 	std::unique_ptr<Stmt> ParseFor();
 
+	std::unique_ptr<Expr> ParseCall();
 	std::unique_ptr<Expr> ParseExpr(int min_binding_power = 1);
 
 	int BindingPower(Token* op);

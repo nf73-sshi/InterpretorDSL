@@ -2,6 +2,7 @@
 #include "Parser.h"
 #include <unordered_map>
 #include "Debug.h"
+
 struct SemanticAnalyser
 {
 	std::unordered_map<std::string, float> idList;

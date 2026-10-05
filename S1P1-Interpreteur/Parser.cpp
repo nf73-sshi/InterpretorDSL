@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include "Debug.h"
+#include "Environment.h"
 
 void Parser::Parse()
 {
@@ -10,7 +11,7 @@ void Parser::Parse()
 
     for (std::unique_ptr<Stmt>& stmt : statements)
     {
-        //stmt->Print();
+        stmt->Print();
     }
 }
 
@@ -53,9 +54,9 @@ std::unique_ptr<Stmt> Parser::ParseStmt()
         {
             stmt = ParseAssignement();
         }
-        else if (Next()->type == TokenType::LPARENTHESIS)
+        if (Next()->type == TokenType::LPARENTHESIS)
         {
-            stmt = ParseFunctionCall();
+            stmt = ParseExprStmt();
         }
         break;
     }
@@ -66,74 +67,9 @@ std::unique_ptr<Stmt> Parser::ParseStmt()
     return stmt;
 }
 
-std::unique_ptr<Stmt> Parser::ParseFunctionCall()
+std::unique_ptr<Stmt> Parser::ParseExprStmt()
 {
-    Token* func_t = Advance();
-    std::string func_name = func_t->GetLexeme();
-    std::unique_ptr<FunctionCallStmt> func = std::make_unique<FunctionCallStmt>(FunctionCallStmt::FUNC_NONE, func_name);
-    Advance();
-
-    std::vector<std::unique_ptr<Stmt>> params;
-    size_t params_count = 0;
-    size_t needed_params = 0;
-
-    while (true)
-    {
-        if (Peek()->type == TokenType::RPARENTHESIS)
-        {
-            Advance();
-            break;
-        }
-
-        func->params.push_back(std::move(ParseParam()));
-        params_count++;
-    }
-
-    bool handle_error = false;
-
-    if (func_name == "GetAliveTroops")
-    {
-        func->id = FunctionCallStmt::GET_ALIVE_TROOPS;
-        needed_params = 0; 
-    }
-    else if (func_name == "GetAliveTroopsInTeam")
-    {
-        func->id = FunctionCallStmt::GET_ALIVE_TROOPS_IN_TEAM;
-        needed_params = 1; //team id
-    }
-    else if (func_name == "Spawn")
-    {
-        func->id = FunctionCallStmt::SPAWN;
-        needed_params = 4; //troop, x, y, team_id
-    }
-    else if (func_name == "SpawnMultiple")
-    {
-        func->id = FunctionCallStmt::SPAWN_MULTIPLE;
-        needed_params = 5; //troop, x, y, count, team_id
-    }
-    else if (func_name == "GetElapsedTime")
-    {
-        func->id = FunctionCallStmt::GET_ELAPSED_TIME;
-        needed_params = 0;
-    }
-    else if (func_name == "TimeScale")
-    {
-        func->id = FunctionCallStmt::TIME_SCALE;
-        needed_params = 1; //scale
-    }
-    else // Function not found !
-        Debug::SyntaxError(func_t, "THIS FUNCTION DOESN'T EXISTS");
-
-    if (params_count != needed_params && needed_params != -1)
-        handle_error = true;
-
-    if (handle_error)
-    {
-        std::string message = "THIS FUNCTION NEEDS " + std::to_string(needed_params) + " PARAMETERS";
-        Debug::SyntaxError(func_t, message.c_str());
-    }
-
-    return func;
+    return std::make_unique<ExpressionStmt>(ParseExpr()); //Handle calls with no assign;
 }
 
 std::unique_ptr<Stmt> Parser::ParseAssignement()
@@ -270,6 +206,75 @@ std::unique_ptr<Stmt> Parser::ParseFor()
     return std::make_unique<ForStmt>(std::move(init), std::move(n), std::move(then));
 }
 
+std::unique_ptr<Expr> Parser::ParseCall()
+{
+    Token* call_t = Advance(); //identifier
+    std::string call_name = call_t->GetLexeme();
+    std::unique_ptr<Call> call = std::make_unique<Call>(Call::ID::FUNC_NONE, call_name);
+    Advance(); // (
+
+    size_t params_count = 0;
+    size_t needed_params = 0;
+
+    while (true)
+    {
+        if (Peek()->type == TokenType::RPARENTHESIS)
+        {
+            Advance();
+            break;
+        }
+
+        call->params.push_back(std::move(ParseExpr()));
+        params_count++;
+    }
+
+    bool handle_error = false;
+
+    if (call_name == "GetAliveTroops")
+    {
+        call->id = Call::ID::GET_ALIVE_TROOPS;
+        needed_params = 0;
+    }
+    else if (call_name == "GetAliveTroopsInTeam")
+    {
+        call->id = Call::ID::GET_ALIVE_TROOPS_IN_TEAM;
+        needed_params = 1; //team id
+    }
+    else if (call_name == "Spawn")
+    {
+        call->id = Call::ID::SPAWN;
+        needed_params = 4; //troop, x, y, team_id
+    }
+    else if (call_name == "SpawnMultiple")
+    {
+        call->id = Call::ID::SPAWN_MULTIPLE;
+        needed_params = 5; //troop, x, y, count, team_id
+    }
+    else if (call_name == "GetElapsedTime")
+    {
+        call->id = Call::ID::GET_ELAPSED_TIME;
+        needed_params = 0;
+    }
+    else if (call_name == "TimeScale")
+    {
+        call->id = Call::ID::TIME_SCALE;
+        needed_params = 1; //scale
+    }
+    else // Function not found !
+        Debug::SyntaxError(call_t, "THIS FUNCTION DOESN'T EXISTS");
+
+    if (params_count != needed_params && needed_params != -1)
+        handle_error = true;
+
+    if (handle_error)
+    {
+        std::string message = "THIS FUNCTION NEEDS " + std::to_string(needed_params) + " PARAMETERS";
+        Debug::SyntaxError(call_t, message.c_str());
+    }
+
+    return call;
+}
+
 std::unique_ptr<Expr> Parser::ParseExpr(int min_binding_power)
 {
     std::unique_ptr<Expr> left = Prefix();
@@ -338,15 +343,22 @@ std::unique_ptr<Expr> Parser::Prefix()
 
     case TokenType::TRUE:
         Advance();
-        return std::make_unique<Literal>(1);
+        return std::make_unique<Literal>(1.0f);
 
     case TokenType::FALSE:
         Advance();
-        return std::make_unique<Literal>(0);
+        return std::make_unique<Literal>(0.f);
 
     case TokenType::IDENTIFIER:
-        Advance();
-        return std::make_unique<Variable>(current->GetLexeme());
+        if (Next()->type == TokenType::LPARENTHESIS)
+        {
+            return ParseCall();
+        }
+        else
+        {
+            Advance();
+            return std::make_unique<Variable>(current->GetLexeme());
+        }
 
     case TokenType::SUB:
     case TokenType::NOT:
@@ -357,4 +369,73 @@ std::unique_ptr<Expr> Parser::Prefix()
     }
 
     return nullptr;
+}
+
+//Exe + Evals
+
+void ExpressionStmt::Execute(Environment* e)
+{
+    expr->Eval(e);
+}
+
+void AssignStmt::Execute(Environment* e)
+{
+}
+
+void ParamStmt::Execute(Environment* e)
+{
+}
+
+void TroopStmt::Execute(Environment* e)
+{
+}
+
+void BlockStmt::Execute(Environment* e)
+{
+}
+
+void IfStmt::Execute(Environment* e)
+{
+}
+
+void WhileStmt::Execute(Environment* e)
+{
+}
+
+void ForStmt::Execute(Environment* e)
+{
+}
+
+void ValStmt::Execute(Environment* e)
+{
+}
+
+Object Call::Eval(Environment* e)
+{
+    return Object();
+}
+
+Object Literal::Eval(Environment* e)
+{
+    return Object{ value };
+}
+
+Object Variable::Eval(Environment* e)
+{
+    return Object{};
+}
+
+Object Grouping::Eval(Environment* e)
+{
+    return Object{};
+}
+
+Object Unary::Eval(Environment* e)
+{
+    return Object{};
+}
+
+Object Binary::Eval(Environment* e)
+{
+    return Object{};
 }

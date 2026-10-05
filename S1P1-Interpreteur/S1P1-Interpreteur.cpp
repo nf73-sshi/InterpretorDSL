@@ -5,6 +5,7 @@
 
 #include "SemanticAnalyser.h"
 #include "TreeWalker.h"
+#include "Environment.h"
 
 //#define SFML_STATIC
 //#pragma comment(lib, "opengl32.lib")
@@ -35,9 +36,13 @@ int main()
     Parser parser(lexer.tokens);
     parser.Parse();
 
-    SemanticAnalyser sem(parser.statements);
-    sem.AnalyseStmt();
+   /* SemanticAnalyser sem(parser.statements);
+    sem.AnalyseStmt();*/
 
-   /* TreeWalker tree_walker(parser.statements);
-    tree_walker.Execute();*/
+    Environment e;
+
+    TreeWalker tree_walker(parser.statements);
+    tree_walker.Execute(&e);
+
+    return 0;
 }

@@ -1,14 +1,11 @@
 #include "TreeWalker.h"
+#include "Parser.h"
+#include "Environment.h"
 
-void TreeWalker::Execute()
+void TreeWalker::Execute(Environment* e)
 {
 	for (std::unique_ptr<Stmt>& stmt : statements)
 	{
-		stmt->Evaluate();
-	}
-
-	for (std::unique_ptr<Stmt>& stmt : statements)
-	{
-		stmt->Execute();
+		stmt->Execute(e);
 	}
 }
