@@ -53,6 +53,10 @@ std::unique_ptr<Stmt> Parser::ParseStmt()
         {
             stmt = ParseAssignement();
         }
+        else if (Next()->type == TokenType::LPARENTHESIS)
+        {
+            stmt = ParseFunctionCall();
+        }
         break;
     }
 
@@ -60,6 +64,76 @@ std::unique_ptr<Stmt> Parser::ParseStmt()
         Debug::SyntaxError(current, "INVALID STATEMENT");
 
     return stmt;
+}
+
+std::unique_ptr<Stmt> Parser::ParseFunctionCall()
+{
+    Token* func_t = Advance();
+    std::string func_name = func_t->GetLexeme();
+    std::unique_ptr<FunctionCallStmt> func = std::make_unique<FunctionCallStmt>(FunctionCallStmt::FUNC_NONE, func_name);
+    Advance();
+
+    std::vector<std::unique_ptr<Stmt>> params;
+    size_t params_count = 0;
+    size_t needed_params = 0;
+
+    while (true)
+    {
+        if (Peek()->type == TokenType::RPARENTHESIS)
+        {
+            Advance();
+            break;
+        }
+
+        func->params.push_back(std::move(ParseParam()));
+        params_count++;
+    }
+
+    bool handle_error = false;
+
+    if (func_name == "GetAliveTroops")
+    {
+        func->id = FunctionCallStmt::GET_ALIVE_TROOPS;
+        needed_params = 0; 
+    }
+    else if (func_name == "GetAliveTroopsInTeam")
+    {
+        func->id = FunctionCallStmt::GET_ALIVE_TROOPS_IN_TEAM;
+        needed_params = 1; //team id
+    }
+    else if (func_name == "Spawn")
+    {
+        func->id = FunctionCallStmt::SPAWN;
+        needed_params = 4; //troop, x, y, team_id
+    }
+    else if (func_name == "SpawnMultiple")
+    {
+        func->id = FunctionCallStmt::SPAWN_MULTIPLE;
+        needed_params = 5; //troop, x, y, count, team_id
+    }
+    else if (func_name == "GetElapsedTime")
+    {
+        func->id = FunctionCallStmt::GET_ELAPSED_TIME;
+        needed_params = 0;
+    }
+    else if (func_name == "TimeScale")
+    {
+        func->id = FunctionCallStmt::TIME_SCALE;
+        needed_params = 1; //scale
+    }
+    else // Function not found !
+        Debug::SyntaxError(func_t, "THIS FUNCTION DOESN'T EXISTS");
+
+    if (params_count != needed_params && needed_params != -1)
+        handle_error = true;
+
+    if (handle_error)
+    {
+        std::string message = "THIS FUNCTION NEEDS " + std::to_string(needed_params) + " PARAMETERS";
+        Debug::SyntaxError(func_t, message.c_str());
+    }
+
+    return func;
 }
 
 std::unique_ptr<Stmt> Parser::ParseAssignement()

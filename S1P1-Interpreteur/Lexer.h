@@ -61,6 +61,6 @@ private:
 	void AddToken(TokenType type);
 	void AddToken(std::string_view lexeme, TokenType type);
 
-	bool Match(const char* match_text, int size); //if remove_last it wont add the last character of the string (like space !)
+	bool Match(const char* match_text, int size);
 };
 

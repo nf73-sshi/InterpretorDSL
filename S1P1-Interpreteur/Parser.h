@@ -6,6 +6,7 @@
 
 enum StmtType
 {
+	FUNCTION_STMT,
 	ASSIGN_STMT,
 	BLOCK_STMT,
 
@@ -16,7 +17,7 @@ enum StmtType
 	PARAM_STMT,
 
 	TROOP_STMT,
-	VAL_STMT
+	VAL_STMT,
 };
 
 struct Stmt
@@ -53,6 +54,40 @@ struct Expr
 	}
 	virtual ~Expr() = default;
 	virtual void Print() = 0;
+};
+
+struct FunctionCallStmt : public Stmt
+{
+	enum FunctionID
+	{
+		FUNC_NONE,
+		SPAWN,
+		SPAWN_MULTIPLE,
+		GET_ALIVE_TROOPS,
+		GET_ALIVE_TROOPS_IN_TEAM,
+		GET_ELAPSED_TIME,
+		TIME_SCALE,
+	};
+
+	FunctionID id = FUNC_NONE;
+	std::string name = "";
+	std::vector<std::unique_ptr<Stmt>> params;
+
+	FunctionCallStmt(FunctionID _id, std::string _name) : Stmt(FUNCTION_STMT)
+	{
+		id = _id;
+		name = _name;
+	}
+
+	void Print() override
+	{
+		std::cout << "FUNCTION | " << name << "(";
+		for (std::unique_ptr<Stmt>& stmt : params)
+		{
+			stmt->Print();
+		}
+		std::cout << ")\n";
+	}
 };
 
 struct AssignStmt : public Stmt
@@ -353,6 +388,7 @@ private:
 
 private:
 	std::unique_ptr<Stmt> ParseStmt();
+	std::unique_ptr<Stmt> ParseFunctionCall();
 	std::unique_ptr<Stmt> ParseAssignement();
 	std::unique_ptr<Stmt> ParseParam();
 
@@ -362,7 +398,6 @@ private:
 	std::unique_ptr<Stmt> ParseIf();
 	std::unique_ptr<Stmt> ParseWhile();
 	std::unique_ptr<Stmt> ParseFor();
-
 
 	std::unique_ptr<Expr> ParseExpr(int min_binding_power = 1);
 

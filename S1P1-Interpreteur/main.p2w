@@ -1,24 +1,4 @@
-Troop ebarb = cost:69 pv:1000 dmg:400 radius:3 fatkspeed:0.5 atkspeed:2.1 speed:10 range:1
-
-val x = 0
-val y = 2
-
-for i = 0, 69
-{
-x = x + i
-}
-
-if x == 0
-{
-x = (1 + 2) * 5
-y = 4
-}
-else
-{
-x = -1
-y = -2
-}
-while x < 5
-{
-x = x+ 1
-}
+SpawnMultiple(troop: ebarb pos_x:x pos_y:y count:10 team:0)
+GetElapsedTime()
+GetAliveTroopsInTeam(team:0)
+TimeScale(sca:0.5)
