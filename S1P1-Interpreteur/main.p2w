@@ -3,6 +3,11 @@ Troop ebarb = cost:69 pv:1000 dmg:400 radius:3 fatkspeed:0.5 atkspeed:2.1 speed:
 val x = 0
 val y = 2
 
+for i = 0, 69
+{
+x = x + i
+}
+
 if x == 0
 {
 x = (1 + 2) * 5
@@ -16,9 +21,4 @@ y = -2
 while x < 5
 {
 x = x+ 1
-}
-for x + 4
-{
-
-
 }

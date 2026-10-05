@@ -92,7 +92,7 @@ std::unique_ptr<Stmt> Parser::ParseStmt()
     }
 
     if (stmt == nullptr)
-        Debug::FatalError("Invalid Statement !");
+        Debug::SyntaxError(current, "INVALID STATEMENT");
 
     return stmt;
 }
@@ -209,12 +209,26 @@ std::unique_ptr<Stmt> Parser::ParseWhile()
 
 std::unique_ptr<Stmt> Parser::ParseFor()
 {
-    Advance();
-    std::unique_ptr<Expr> condition = ParseExpr();
+    Token* for_t = Advance(); // for
+    std::unique_ptr<Stmt> init = ParseStmt();
 
+    if (init->type != StmtType::ASSIGN_STMT && init->type != StmtType::VAL_STMT)
+    {
+        Debug::SyntaxError(for_t, "ASSIGNEMENT OR INIT VAL EXPECTED");
+        return nullptr;
+    }
+
+    Token* comma = Advance(); // ,
+    if (comma->type != TokenType::COMMA)
+    {
+        Debug::SyntaxError(comma, "COMMA EXPECTED AFTER ASSIGNEMENT");
+        return nullptr;
+    }
+
+    std::unique_ptr<Expr> n = ParseExpr();
     std::unique_ptr<Stmt> then = ParseStmt();
 
-    return std::make_unique<ForStmt>(std::move(condition), std::move(then));
+    return std::make_unique<ForStmt>(std::move(init), std::move(n), std::move(then));
 }
 
 std::unique_ptr<Expr> Parser::ParseExpr(int min_binding_power)

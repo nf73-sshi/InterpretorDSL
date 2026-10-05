@@ -182,23 +182,25 @@ struct WhileStmt : public Stmt
 
 struct ForStmt : public Stmt
 {
-	std::unique_ptr<Expr> condition = nullptr;
+	std::unique_ptr<Stmt> init = nullptr; //Assign -> i = 0
+	std::unique_ptr<Expr> n = nullptr; //for(i = 0 ,i < n, ++i) | increment i until n
 	std::unique_ptr<Stmt> then = nullptr;
 
-	ForStmt(std::unique_ptr<Expr> _condition, std::unique_ptr<Stmt> _then) : Stmt(FOR_STMT)
+	ForStmt(std::unique_ptr<Stmt> _init, std::unique_ptr<Expr> _n, std::unique_ptr<Stmt> _then) : Stmt(FOR_STMT)
 	{
-		condition = std::move(_condition);
+		init = std::move(_init);
+		n = std::move(_n);
 		then = std::move(_then);
 	}
 
 	void Print() override
 	{
 		std::cout << "FOR | ";
-		condition->Print();
+		init->Print();
+		std::cout << ", "; n->Print();
+		std::cout << "\n"; then->Print();
 		std::cout << "\n";
-		then->Print();
 	}
-	Expr* GetExpr() { return condition.get(); }
 };
 
 struct ValStmt : public Stmt
