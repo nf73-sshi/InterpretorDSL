@@ -14,40 +14,7 @@ void Parser::Parse()
     }
 }
 
-void Parser::CheckSemantic()
-{
-    for (std::unique_ptr<Stmt>& stmt : statements)
-    {
-        std::vector<Expr*> expr;
-        switch (stmt->type)
-        {
-        case TokenType::IF:
-            SemanticIf(stmt.get());
-            break;
-        case TokenType::FOR:
-            SemanticFor(stmt.get());
-            break;
-        case TokenType::WHILE:
-            SemanticWhile(stmt.get());
-            break;
-        case TokenType::LBRACKET:
-            SemanticBlock(stmt.get());
-            break;
-        case TokenType::VAL:
-            SemanticVal(stmt.get());
-            break;
-        case TokenType::TROOP:
-            SemanticTroop(stmt.get());
-            break;
-        case TokenType::IDENTIFIER:
-            SemanticAssignement(stmt.get());
-            break;
-            if (stmt == nullptr)
-                Debug::FatalError("Invalid Statement !");
-        }
-    }
 
-}
 
 std::unique_ptr<Stmt> Parser::ParseStmt()
 {
@@ -249,50 +216,6 @@ std::unique_ptr<Expr> Parser::ParseExpr(int min_binding_power)
     }
 
     return left;
-}
-
-bool Parser::SemanticVal(Stmt* stmt)
-{
-    return false;
-}
-
-bool Parser::SemanticTroop(Stmt* stmt)
-{
-    return false;
-}
-
-bool Parser::SemanticBlock(Stmt* stmt)
-{
-    return false;
-}
-
-bool Parser::SemanticIf(Stmt* stmt)
-{
-    IfStmt* ifStmt = static_cast<IfStmt*>(stmt);
-    ExprType type = ifStmt->condition.get()->type;
-
-    if (type != ExprType::BINARY)
-        return false;
-    else
-    {
-
-    }
-    return false;
-}
-
-bool Parser::SemanticWhile(Stmt* stmt)
-{
-    return false;
-}
-
-bool Parser::SemanticFor(Stmt* stmt)
-{
-    return false;
-}
-
-bool Parser::SemanticAssignement(Stmt* stmt)
-{
-    return false;
 }
 
 int Parser::BindingPower(Token* op)
