@@ -3,6 +3,7 @@
 #include <sstream>
 #include <regex>
 
+#include "SemanticAnalyser.h"
 #include "TreeWalker.h"
 
 //#define SFML_STATIC
@@ -37,6 +38,6 @@ int main()
     SemanticAnalyser sem(parser.statements);
     sem.AnalyseStmt();
 
-    TreeWalker tree_walker(parser.statements);
-    tree_walker.Execute();
+   /* TreeWalker tree_walker(parser.statements);
+    tree_walker.Execute();*/
 }
