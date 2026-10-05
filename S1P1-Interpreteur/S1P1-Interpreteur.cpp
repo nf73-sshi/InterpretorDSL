@@ -34,6 +34,9 @@ int main()
     Parser parser(lexer.tokens);
     parser.Parse();
 
+    SemanticAnalyser sem(parser.statements);
+    sem.AnalyseStmt();
+
     TreeWalker tree_walker(parser.statements);
     tree_walker.Execute();
 }

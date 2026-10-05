@@ -1,11 +1,15 @@
 #pragma once
 #include "Parser.h"
-
-class SemanticAnalyser
+#include <unordered_map>
+#include "Debug.h"
+struct SemanticAnalyser
 {
+	std::unordered_map<std::string, float> idList;
 
 	std::vector<std::unique_ptr<Stmt>> stmtList;
-	SemanticAnalyser(std::vector<std::unique_ptr<Stmt>> _stmtList)
+	int actualID = 0;
+
+	SemanticAnalyser(std::vector<std::unique_ptr<Stmt>>& _stmtList)
 	{ 
 		for (std::unique_ptr<Stmt>& stmt : _stmtList)
 		{
@@ -14,13 +18,12 @@ class SemanticAnalyser
 	};
 
 	void AnalyseStmt();
-
 public:
-	int SemanticAssign(Stmt* stmt);
-	int SemanticIf(Stmt* stmt);
-	int SemanticWhile(Stmt* stmt);
-	int SemanticFor(Stmt* stmt);
-	int SemanticTroop(Stmt* stmt);
-	int SemanticParam(Stmt* stmt);
-	int SemanticVal(Stmt* stmt);
+	void SemanticAssign(Stmt* stmt);
+	void SemanticIf(Stmt* stmt);
+	void SemanticWhile(Stmt* stmt);
+	void SemanticFor(Stmt* stmt);
+	void SemanticTroop(Stmt* stmt);
+	void SemanticParam(Stmt* stmt);
+	void SemanticVal(Stmt* stmt);
 };
