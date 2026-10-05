@@ -4,37 +4,34 @@ void SemanticAnalyser::AnalyseStmt()
 {
 	for (std::unique_ptr<Stmt>& stmt : stmtList)
 	{
-		int sementicCase;
+		stmt->Print();
+
 		switch (stmt->type)
 		{
 		case ASSIGN_STMT:
-			sementicCase = SemanticAssign(stmt.get());
+			SemanticAssign(stmt.get()); 
 			break;
 		case IF_STMT:
-			sementicCase = SemanticIf(stmt.get());
+			SemanticIf(stmt.get());
 			break;
 		case WHILE_STMT:
-			sementicCase = SemanticWhile(stmt.get());
+			SemanticWhile(stmt.get());
 			break;
 		case FOR_STMT:
-			sementicCase = SemanticFor(stmt.get());
-			break;
-		case PARAM_STMT:
-			sementicCase = SemanticParam(stmt.get());
+			SemanticFor(stmt.get());
 			break;
 		case TROOP_STMT:;
-			sementicCase = SemanticTroop(stmt.get());
+			SemanticTroop(stmt.get());
 			break;
 		case VAL_STMT:
-			sementicCase = SemanticTroop(stmt.get());
+			SemanticVal(stmt.get());
 			break;
 		default:
 			break;
-			
 		}
 	}
 }
-int SemanticAnalyser::SemanticAssign(Stmt* stmt)
+void SemanticAnalyser::SemanticAssign(Stmt* stmt)
 {
 	AssignStmt* asnStmt = static_cast<AssignStmt*>(stmt);
 	ExprType type = asnStmt->expr.get()->type;
@@ -43,94 +40,177 @@ int SemanticAnalyser::SemanticAssign(Stmt* stmt)
 	{
 		Variable* expr = static_cast<Variable*>(asnStmt->expr.get());
 		if (expr->name == "")
-			return 1;
-		return 0;
+			Debug::FatalError("value missing");
+		else if (!idList.contains(expr->name))
+			Debug::FatalError("Var allready create");
+		return ;
 	}
 	else if (type == ExprType::GROUPING)
 	{
 		Grouping* grp = static_cast<Grouping*>(asnStmt->expr.get());
 
 		if (grp->expr.get()->type != ExprType::VARIABLE)
-			return 1;
+			Debug::FatalError("wrong expression");
 		Variable* expr = static_cast<Variable*>(grp->expr.get());
 		if (expr->name == "")
-			return 1;
-		return 0;
+			Debug::FatalError("value missing");
+		else if (!idList.contains(expr->name))
+			Debug::FatalError("Var allready create");
+		return ;
 	}
 	else
-		return 2;
+		Debug::FatalError("wrong Statement");
 }
 
 
-int SemanticAnalyser::SemanticIf(Stmt* stmt)
+void SemanticAnalyser::SemanticIf(Stmt* stmt)
 {
 	IfStmt* ifStmt = static_cast<IfStmt*>(stmt);
 	ExprType type = ifStmt->condition.get()->type;
 
 	if (type != ExprType::BINARY)
-		return 2;
+		Debug::FatalError("Wrong expression");
 	Binary* expr = static_cast<Binary*>(ifStmt->condition.get());
 	if (expr->left == nullptr)
-		return 1;
+		Debug::FatalError("value missing");
 	if (expr->right == nullptr)
-		return 1;
+		Debug::FatalError("value missing");
 	if (expr->op == "")
-		return 1;
+		Debug::FatalError("value missing");
 
-	return 0;
+	if (expr->left->type == ExprType::VARIABLE)
+	{
+		Variable* var = static_cast<Variable*>(expr->left.get());
+		if (!idList.contains(var->name))
+			Debug::FatalError("Var allready create");
+	}
+	if (expr->right->type == ExprType::VARIABLE )
+	{
+		Variable* var = static_cast<Variable*>(expr->left.get());
+		if (!idList.contains(var->name))
+			Debug::FatalError("Var allready create");
+	}
+	return ;
 }
 
-int SemanticAnalyser::SemanticWhile(Stmt* stmt)
+void SemanticAnalyser::SemanticWhile(Stmt* stmt)
 {
 	WhileStmt* whileStmt = static_cast<WhileStmt*>(stmt);
 	ExprType type = whileStmt->condition.get()->type;
 
 	if (type != ExprType::BINARY)
-		return 2;
+		Debug::FatalError("Wrong expression");
 	Binary* expr = static_cast<Binary*>(whileStmt->condition.get());
 	if (expr->left == nullptr)
-		return 1;
+		Debug::FatalError("value missing");
 	if (expr->right == nullptr)
-		return 1;
+		Debug::FatalError("value missing");
 	if (expr->op == "")
-		return 1;
+		Debug::FatalError("value missing");
 
-	return 0;
+	if (expr->left->type == ExprType::VARIABLE)
+	{
+		Variable* var = static_cast<Variable*>(expr->left.get());
+		if (!idList.contains(var->name))
+			Debug::FatalError("Var allready create");
+	}
+	if (expr->right->type == ExprType::VARIABLE)
+	{
+		Variable* var = static_cast<Variable*>(expr->left.get());
+		if (!idList.contains(var->name))
+			Debug::FatalError("Var allready create");
+	}
+
+	return ;
 }
 
-int SemanticAnalyser::SemanticFor(Stmt* stmt)
+void SemanticAnalyser::SemanticFor(Stmt* stmt)
 {
-	TroopStmt* valStmt = static_cast<TroopStmt*>(stmt);
+	ForStmt* whileStmt = static_cast<ForStmt*>(stmt);
+	StmtType stmtType = whileStmt->init.get()->type;
+	ExprType exprType;
+	ValStmt* valStmt = static_cast<ValStmt*>(whileStmt->init.get());
+	switch (stmtType)
+	{
+	case ASSIGN_STMT:
 
-	if (valStmt->params.size() == 0)
-		return 2;
+		if (valStmt->expr->type == ExprType::VARIABLE)
+		{
+			Variable* var = static_cast<Variable*>(valStmt->expr.get());
+			if (!idList.contains(var->name))
+				Debug::FatalError("Var allready create");
+			else
+				return;
+		}
+		else if (valStmt->expr->type == ExprType::LITERAL)
+			return;
+		else
+			Debug::FatalError("Wrong expression ");
+		break;
+	case VAL_STMT:
+		if (valStmt->expr->type == ExprType::VARIABLE)
+		{
+			Variable* var = static_cast<Variable*>(valStmt->expr.get());
+			if (idList.contains(var->name))
+				Debug::FatalError("Var allready create");
+			else
+			{
+				idList[var->name] = actualID;
+				actualID++;
+				return ;
+			}
+		}
+		else if (valStmt->expr->type == ExprType::LITERAL)
+			return;
+		else 
+			Debug::FatalError("Wrong Expression");
+		{
 
-	else
-		return 0;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return ;
 }
 
-int SemanticAnalyser::SemanticTroop(Stmt* stmt)
+void SemanticAnalyser::SemanticTroop(Stmt* stmt)
 {
-	return 0;
+	TroopStmt* troopStmt = static_cast<TroopStmt*>(stmt);
+
+	if (troopStmt->params.size() == 0)
+		Debug::FatalError("not enough parameter in troop");
+	std::unordered_map <std::string, bool > paramMap;
+	for (std::unique_ptr<Stmt>& pstmt : troopStmt->params)
+	{
+		ParamStmt* paramstmt = static_cast<ParamStmt*>(pstmt.get());
+		if (paramMap.contains(paramstmt->name))
+			Debug::FatalError("parameter allready in troop");
+		else
+			paramMap[paramstmt->name] = true;
+	}
+	if (paramMap.size() < 8)
+			Debug::FatalError("not enought parameter in troop");
 }
 
-int SemanticAnalyser::SemanticParam(Stmt* stmt)
-{
-	return 0;
-}
-
-int SemanticAnalyser::SemanticVal(Stmt* stmt)
+void SemanticAnalyser::SemanticVal(Stmt* stmt)
 {
 	ValStmt* valStmt = static_cast<ValStmt*>(stmt);
 	ExprType type = valStmt->expr.get()->type;
 
-	if (type != ExprType::VARIABLE)
-		return 2;
-	
-	Variable* var = static_cast<Variable*>(valStmt->expr.get());
-	if (var->name == "")
-		return 1;
+
+	if (type == ExprType::VARIABLE || type == ExprType::LITERAL)
+	{
+		if (valStmt->name == "")
+			Debug::FatalError("Missing Value ");
+		else if (type == ExprType::VARIABLE && idList.contains(valStmt->name))
+			Debug::FatalError("Value Already initiate");
+		idList[valStmt->name] = actualID;
+		actualID++;
+	}
 	else
-		return 0;
-	
+		Debug::FatalError("Wrong Expression");
+
+
 }
