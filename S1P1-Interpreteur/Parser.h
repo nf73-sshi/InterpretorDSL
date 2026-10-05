@@ -347,7 +347,7 @@ public:
 	}
 
 	void Parse();
-	void CheckSemantic();
+	void CheckSemantic(Stmt* stmt);
 private:
 
 private:
@@ -364,14 +364,6 @@ private:
 
 
 	std::unique_ptr<Expr> ParseExpr(int min_binding_power = 1);
-
-	bool SemanticVal(Stmt* stmt);
-	bool SemanticTroop(Stmt* stmt);
-	bool SemanticBlock(Stmt* stmt);
-	bool SemanticIf(Stmt* stmt);
-	bool SemanticWhile(Stmt* stmt);
-	bool SemanticFor(Stmt* stmt);
-	bool SemanticAssignement(Stmt* stmt);
 
 	int BindingPower(Token* op);
 	std::unique_ptr<Expr> Prefix();
