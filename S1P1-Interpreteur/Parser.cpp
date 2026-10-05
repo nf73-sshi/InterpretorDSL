@@ -332,8 +332,6 @@ std::unique_ptr<Expr> Parser::Prefix()
 
     switch (current->type)
     {
- 
-
     case TokenType::NUMBER:
         Advance();
         return std::make_unique<Literal>(std::stof(current->GetLexeme()));

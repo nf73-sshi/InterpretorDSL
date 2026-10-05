@@ -152,12 +152,14 @@
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="S1P1-Interpreteur.cpp" />
     <ClCompile Include="SemanticAnalyser.cpp" />
+    <ClCompile Include="TreeWalker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="SemanticAnalyser.h" />
+    <ClInclude Include="TreeWalker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="main.p2w" />

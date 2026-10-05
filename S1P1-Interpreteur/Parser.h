@@ -30,6 +30,9 @@ struct Stmt
 	}
 	virtual ~Stmt() = default;
 	virtual void Print() = 0;
+
+	virtual void Evaluate() {};
+	virtual void Execute() {};
 };
 
 enum ExprType
@@ -54,6 +57,9 @@ struct Expr
 	}
 	virtual ~Expr() = default;
 	virtual void Print() = 0;
+
+	virtual void Eval() = 0;
+	virtual void Execute() = 0;
 };
 
 struct FunctionCallStmt : public Stmt
@@ -270,6 +276,16 @@ struct Literal : public Expr
 	{
 		std::cout << value;
 	}
+
+	void Eval() override
+	{
+
+	}
+
+	void Execute() override
+	{
+
+	}
 };
 
 struct Variable : public Expr
@@ -284,6 +300,16 @@ struct Variable : public Expr
 	void Print() override
 	{
 		std::cout << name;
+	}
+
+	void Eval() override
+	{
+
+	}
+
+	void Execute() override
+	{
+
 	}
 };
 
@@ -301,6 +327,16 @@ struct Grouping : public Expr
 		std::cout << "(";
 		expr->Print();
 		std::cout << ")";
+	}
+
+	void Eval() override
+	{
+
+	}
+
+	void Execute() override
+	{
+
 	}
 };
 
@@ -320,6 +356,16 @@ struct Unary : public Expr
 		std::cout << symbol;
 		right->Print();
 	}
+
+	void Eval() override
+	{
+
+	}
+
+	void Execute() override
+	{
+
+	}
 };
 
 struct Binary : public Expr
@@ -338,6 +384,16 @@ struct Binary : public Expr
 		left->Print();
 		std::cout << " " << op << " ";
 		right->Print();
+	}
+
+	void Eval() override
+	{
+
+	}
+
+	void Execute() override
+	{
+
 	}
 };
 
@@ -384,7 +440,6 @@ public:
 	}
 
 	void Parse();
-private:
 
 private:
 	std::unique_ptr<Stmt> ParseStmt();
