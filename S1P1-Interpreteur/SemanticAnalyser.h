@@ -5,7 +5,14 @@ class SemanticAnalyser
 {
 
 	std::vector<std::unique_ptr<Stmt>> stmtList;
-	SemanticAnalyser(std::vector<std::unique_ptr<Stmt>> _stmtList) { stmtList = _stmtList; };
+	SemanticAnalyser(std::vector<std::unique_ptr<Stmt>> _stmtList)
+	{ 
+		for (std::unique_ptr<Stmt>& stmt : _stmtList)
+		{
+			stmtList.push_back(std::move(stmt));
+		}
+	};
+
 	void AnalyseStmt();
 
 public:

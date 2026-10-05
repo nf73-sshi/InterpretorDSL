@@ -9,9 +9,10 @@ void SemanticAnalyser::AnalyseStmt()
 		{
 		case ASSIGN_STMT:
 			sementicCase = SemanticAssign(stmt.get());
-				break;
+			break;
 		case IF_STMT:
 			sementicCase = SemanticIf(stmt.get());
+			break;
 		case WHILE_STMT:
 			sementicCase = SemanticWhile(stmt.get());
 			break;

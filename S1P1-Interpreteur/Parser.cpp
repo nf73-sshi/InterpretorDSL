@@ -14,8 +14,6 @@ void Parser::Parse()
     }
 }
 
-
-
 std::unique_ptr<Stmt> Parser::ParseStmt()
 {
     std::unique_ptr<Stmt> stmt = nullptr;
