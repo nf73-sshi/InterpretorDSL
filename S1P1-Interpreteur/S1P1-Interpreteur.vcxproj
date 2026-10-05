@@ -143,11 +143,13 @@
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="S1P1-Interpreteur.cpp" />
+    <ClCompile Include="SemanticAnalyser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="SemanticAnalyser.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="main.p2w" />

@@ -5,24 +5,27 @@ void SemanticAnalyser::AnalyseStmt()
 	for (std::unique_ptr<Stmt>& stmt : stmtList)
 	{
 		int sementicCase;
-		switch (stmt.get()->type)
+		switch (stmt->type)
 		{
 		case ASSIGN_STMT:
 			sementicCase = SemanticAssign(stmt.get());
 				break;
-		case BLOCK_STMT:
-			break;
 		case IF_STMT:
-			break;
+			sementicCase = SemanticIf(stmt.get());
 		case WHILE_STMT:
+			sementicCase = SemanticWhile(stmt.get());
 			break;
 		case FOR_STMT:
+			sementicCase = SemanticFor(stmt.get());
 			break;
 		case PARAM_STMT:
+			sementicCase = SemanticParam(stmt.get());
 			break;
-		case TROOP_STMT:
+		case TROOP_STMT:;
+			sementicCase = SemanticTroop(stmt.get());
 			break;
 		case VAL_STMT:
+			sementicCase = SemanticTroop(stmt.get());
 			break;
 		default:
 			break;
@@ -30,9 +33,9 @@ void SemanticAnalyser::AnalyseStmt()
 		}
 	}
 }
-int SemanticAnalyser::SemanticAssign(std::unique_ptr<Stmt> stmt)
+int SemanticAnalyser::SemanticAssign(Stmt* stmt)
 {
-	AssignStmt* asnStmt = static_cast<AssignStmt*>(stmt.get());
+	AssignStmt* asnStmt = static_cast<AssignStmt*>(stmt);
 	ExprType type = asnStmt->expr.get()->type;
 
 	if (type == ExprType::VARIABLE)
@@ -57,14 +60,10 @@ int SemanticAnalyser::SemanticAssign(std::unique_ptr<Stmt> stmt)
 		return 2;
 }
 
-int SemanticAnalyser::SemanticBlock(std::unique_ptr<Stmt> stmt)
-{
-	return 0;
-}
 
-int SemanticAnalyser::SemanticIf(std::unique_ptr<Stmt> stmt)
+int SemanticAnalyser::SemanticIf(Stmt* stmt)
 {
-	IfStmt* ifStmt = static_cast<IfStmt*>(stmt.get());
+	IfStmt* ifStmt = static_cast<IfStmt*>(stmt);
 	ExprType type = ifStmt->condition.get()->type;
 
 	if (type != ExprType::BINARY)
@@ -80,9 +79,9 @@ int SemanticAnalyser::SemanticIf(std::unique_ptr<Stmt> stmt)
 	return 0;
 }
 
-int SemanticAnalyser::SemanticWhile(std::unique_ptr<Stmt> stmt)
+int SemanticAnalyser::SemanticWhile(Stmt* stmt)
 {
-	WhileStmt* whileStmt = static_cast<WhileStmt*>(stmt.get());
+	WhileStmt* whileStmt = static_cast<WhileStmt*>(stmt);
 	ExprType type = whileStmt->condition.get()->type;
 
 	if (type != ExprType::BINARY)
@@ -98,17 +97,39 @@ int SemanticAnalyser::SemanticWhile(std::unique_ptr<Stmt> stmt)
 	return 0;
 }
 
-int SemanticAnalyser::SemanticFor(std::unique_ptr<Stmt> stmt)
+int SemanticAnalyser::SemanticFor(Stmt* stmt)
+{
+	TroopStmt* valStmt = static_cast<TroopStmt*>(stmt);
+
+	if (valStmt->params.size() == 0)
+		return 2;
+
+	else
+		return 0;
+}
+
+int SemanticAnalyser::SemanticTroop(Stmt* stmt)
 {
 	return 0;
 }
 
-int SemanticAnalyser::SemanticTroop(std::unique_ptr<Stmt> stmt)
+int SemanticAnalyser::SemanticParam(Stmt* stmt)
 {
 	return 0;
 }
 
-int SemanticAnalyser::SemanticVal(std::unique_ptr<Stmt> stmt)
+int SemanticAnalyser::SemanticVal(Stmt* stmt)
 {
-	return 0;
+	ValStmt* valStmt = static_cast<ValStmt*>(stmt);
+	ExprType type = valStmt->expr.get()->type;
+
+	if (type != ExprType::VARIABLE)
+		return 2;
+	
+	Variable* var = static_cast<Variable*>(valStmt->expr.get());
+	if (var->name == "")
+		return 1;
+	else
+		return 0;
+	
 }

@@ -9,11 +9,11 @@ class SemanticAnalyser
 	void AnalyseStmt();
 
 public:
-	int SemanticAssign();
-	int SemanticBlock();
-	int SemanticIf();
-	int SemanticWhile();
-	int SemanticFor();
-	int SemanticTroop();
-	int SemanticVal();
+	int SemanticAssign(Stmt* stmt);
+	int SemanticIf(Stmt* stmt);
+	int SemanticWhile(Stmt* stmt);
+	int SemanticFor(Stmt* stmt);
+	int SemanticTroop(Stmt* stmt);
+	int SemanticParam(Stmt* stmt);
+	int SemanticVal(Stmt* stmt);
 };

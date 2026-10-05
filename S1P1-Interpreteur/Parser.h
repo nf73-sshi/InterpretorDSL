@@ -347,7 +347,6 @@ public:
 	}
 
 	void Parse();
-	void CheckSemantic(Stmt* stmt);
 private:
 
 private:
