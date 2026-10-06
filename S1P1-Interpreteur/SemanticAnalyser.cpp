@@ -217,7 +217,6 @@ void SemanticAnalyser::SemanticVal(Stmt* stmt)
 			Debug::FatalError("Missing Value ");
 
 			ValInBlock(valStmt->name, Type::TYPE_FLOAT);
-
 	}
 	else
 		Debug::FatalError("Wrong Expression");
