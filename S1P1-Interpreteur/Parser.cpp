@@ -57,7 +57,7 @@ std::unique_ptr<Stmt> Parser::ParseStmt()
         {
             stmt = ParseAssignement();
         }
-        else if (Next()->type == TokenType::LPARENTHESIS)
+        else
         {
             stmt = ParseExprStmt();
         }
