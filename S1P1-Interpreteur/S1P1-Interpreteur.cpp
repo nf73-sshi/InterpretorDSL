@@ -39,10 +39,10 @@ int main()
    /* SemanticAnalyser sem(parser.statements);
     sem.AnalyseStmt();*/
 
-    Environment e;
+    /*Environment e;
 
     TreeWalker tree_walker(parser.statements);
-    tree_walker.Execute(&e);
+    tree_walker.Execute(&e);*/
 
     return 0;
 }

@@ -18,6 +18,23 @@ bool Environment::Exists(size_t block, std::string name) const
 	return datas[block].contains(name);
 }
 
+bool Environment::Exists(std::string name) const
+{
+	size_t current_block = datas.size() - 1;
+
+	while (current_block >= 0)
+	{
+		if (Exists(current_block, name))
+		{
+			return true;
+		}
+
+		current_block--;
+	}
+
+	return false;
+}
+
 void Environment::Write(std::string name, Object value)
 {
 	size_t current_block = datas.size() - 1;
@@ -27,7 +44,7 @@ void Environment::Write(std::string name, Object value)
 		if (Exists(current_block, name))
 		{
 			datas[current_block][name] = value;
-			break;
+			return;
 		}
 
 		current_block--;

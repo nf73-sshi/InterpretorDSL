@@ -3,6 +3,7 @@
 #include "Environment.h"
 
 #include <variant>
+#include <unordered_set>
 
 void Parser::Parse()
 {
@@ -56,7 +57,7 @@ std::unique_ptr<Stmt> Parser::ParseStmt()
         {
             stmt = ParseAssignement();
         }
-        if (Next()->type == TokenType::LPARENTHESIS)
+        else if (Next()->type == TokenType::LPARENTHESIS)
         {
             stmt = ParseExprStmt();
         }
@@ -393,7 +394,6 @@ std::unique_ptr<Expr> Parser::Prefix()
 }
 
 //Exe + Evals
-
 void ExpressionStmt::Execute(Environment* e)
 {
     expr->Eval(e);
@@ -401,34 +401,148 @@ void ExpressionStmt::Execute(Environment* e)
 
 void AssignStmt::Execute(Environment* e)
 {
+    if (e->Exists(name))
+        e->Write(name, expr->Eval(e));
+    else
+        Debug::FatalError(name, " DOESN'T EXISTS");
 }
 
-void ParamStmt::Execute(Environment* e)
+void ParamStmt::Execute(Environment* e) //Only used in Troop so no need to do anything here
 {
+    return;
 }
 
 void TroopStmt::Execute(Environment* e)
 {
+    Troop t = {};
+    std::unordered_set<int> params_setted; //size need to be 8 at the end
+
+    for (auto& stmt : params)
+    {
+        ParamStmt* param = static_cast<ParamStmt*>(stmt.get());
+        std::string name = param->name;
+
+        float value = std::get<float>(param->expr->Eval(e));
+
+        if (name == "cost")
+        {
+            t.cost = value;
+            params_setted.insert(0);
+        }
+        else if (name == "hp")
+        {
+            t.hp = value;
+            params_setted.insert(1);
+        }
+        else if (name == "radius")
+        {
+            t.radius = value;
+            params_setted.insert(2);
+        }
+        else if (name == "dmg")
+        {
+            t.dmg = value;
+            params_setted.insert(3);
+        }
+        else if (name == "fatkspeed")
+        {
+            t.fatkspeed = value;
+            params_setted.insert(4);
+        }
+        else if (name == "atkspeed")
+        {
+            t.atkspeed = value;
+            params_setted.insert(5);
+        }
+        else if (name == "speed")
+        {
+            t.speed = value;
+            params_setted.insert(6);
+        }
+        else if (name == "range")
+        {
+            t.range = value;
+            params_setted.insert(7);
+        }
+        else
+            Debug::FatalError("TROOP ERROR, INVALID PARAMETER : ", name);
+    }
+
+    if (params_setted.size() != 8)
+    {
+        Debug::FatalError("TROOP ERROR, ALL PARAMETERS NEED TO BE SETTED");
+    }
+
+    e->Write(var_name, t);
 }
 
 void BlockStmt::Execute(Environment* e)
 {
+    e->AddBlock();
+    for (auto& stmt : statements)
+    {
+        stmt->Execute(e);
+    }
+    e->AddBlock(true);
 }
 
 void IfStmt::Execute(Environment* e)
 {
+    if(std::get<float>(condition->Eval(e)) != 0.0f) //float != 0.0f
+    {
+        then->Execute(e);
+    }
+    else
+    {
+        if (else_branch == nullptr)
+            return;
+
+        else_branch->Execute(e);
+    }
 }
 
 void WhileStmt::Execute(Environment* e)
 {
+    while(std::get<float>(condition->Eval(e)) != 0.0f) //float != 0.0f
+    {
+        then->Execute(e);
+    }
 }
 
 void ForStmt::Execute(Environment* e)
 {
+    int i = 0;
+    std::string var_name = "";
+    init->Execute(e);
+
+    if (init->type == StmtType::VAL_STMT)
+    {
+        ValStmt* val = static_cast<ValStmt*>(init.get());
+        i = (int)std::get<float>(val->expr->Eval(e));
+        var_name = val->name;
+    }
+    else if (init->type == StmtType::ASSIGN_STMT)
+    {
+        AssignStmt* assign = static_cast<AssignStmt*>(init.get());
+        assign->expr->Eval(e);
+        i = (int)std::get<float>(assign->expr->Eval(e));
+        var_name = assign->name;
+    }
+
+    const int amount = (int)std::get<float>(n->Eval(e));
+
+    for (; i < amount;)
+    {
+        then->Execute(e);
+
+        i++;
+        e->Write(var_name, Object{ float(i) });
+    }
 }
 
 void ValStmt::Execute(Environment* e)
 {
+    e->Write(name, expr->Eval(e));
 }
 
 Object Call::Eval(Environment* e)
@@ -443,6 +557,15 @@ Object Literal::Eval(Environment* e)
 
 Object Variable::Eval(Environment* e)
 {
+    if (var_type == Type::TYPE_FLOAT)
+    {
+        
+    }
+    else if (var_type == Type::TYPE_TROOP)
+    {
+
+    }
+
     return Object{};
 }
 
@@ -453,25 +576,31 @@ Object Grouping::Eval(Environment* e)
 
 Object Unary::Eval(Environment* e)
 {
+    Object a = right->Eval(e);
+
+    if(right->type == LITERAL)
+
     return Object{};
 }
 
 Object Binary::Eval(Environment* e)
 {
-    Object a = left->Eval(e);
+   /* Object a = left->Eval(e);
     Object b = right->Eval(e);
 
-    //if (op == "==" || op == "!=")
-    //    return Object{ a == b };
+    
 
-    //else if (type == INFEQUAL || type == SUPEQUAL || type == INF || type == SUP)
-    //    return 4;
+    if (op == "==" || op == "!=")
+        return Object{ a == b };
 
-    //else if (type == ADD || type == SUB)
-    //    return {a + b};
+    else if (type == INFEQUAL || type == SUPEQUAL || type == INF || type == SUP)
+        return 4;
 
-    //else if (type == MUL || type == DIV)
-    //    return 6;
+    else if (type == ADD || type == SUB)
+        return {a + b};
+
+    else if (type == MUL || type == DIV)
+        return 6;*/
 
     return Object{};
 }
