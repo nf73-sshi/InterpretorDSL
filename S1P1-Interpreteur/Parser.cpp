@@ -2,6 +2,8 @@
 #include "Debug.h"
 #include "Environment.h"
 
+#include <variant>
+
 void Parser::Parse()
 {
     while (current < tokens.size())
@@ -233,31 +235,37 @@ std::unique_ptr<Expr> Parser::ParseCall()
     if (call_name == "GetAliveTroops")
     {
         call->id = Call::ID::GET_ALIVE_TROOPS;
+        call->return_type = Type::TYPE_FLOAT;
         needed_params = 0;
     }
     else if (call_name == "GetAliveTroopsInTeam")
     {
         call->id = Call::ID::GET_ALIVE_TROOPS_IN_TEAM;
+        call->return_type = Type::TYPE_FLOAT;
         needed_params = 1; //team id
     }
     else if (call_name == "Spawn")
     {
         call->id = Call::ID::SPAWN;
+        call->return_type = Type::TYPE_VOID;
         needed_params = 4; //troop, x, y, team_id
     }
     else if (call_name == "SpawnMultiple")
     {
         call->id = Call::ID::SPAWN_MULTIPLE;
+        call->return_type = Type::TYPE_VOID;
         needed_params = 5; //troop, x, y, count, team_id
     }
     else if (call_name == "GetElapsedTime")
     {
         call->id = Call::ID::GET_ELAPSED_TIME;
+        call->return_type = Type::TYPE_FLOAT;
         needed_params = 0;
     }
     else if (call_name == "TimeScale")
     {
         call->id = Call::ID::TIME_SCALE;
+        call->return_type = Type::TYPE_FLOAT;
         needed_params = 1; //scale
     }
     else // Function not found !
@@ -356,8 +364,21 @@ std::unique_ptr<Expr> Parser::Prefix()
         }
         else
         {
+            Token* previous = Previous();
+            Type type = TYPE_FLOAT;
+
+            if (previous != nullptr)
+            {
+                // If Val, it's float too
+
+                if (previous->type == TokenType::TROOP) 
+                {
+                    type = TYPE_TROOP;
+                }
+            }
+
             Advance();
-            return std::make_unique<Variable>(current->GetLexeme());
+            return std::make_unique<Variable>(current->GetLexeme(), type);
         }
 
     case TokenType::SUB:
@@ -427,7 +448,7 @@ Object Variable::Eval(Environment* e)
 
 Object Grouping::Eval(Environment* e)
 {
-    return Object{};
+    return expr->Eval(e);
 }
 
 Object Unary::Eval(Environment* e)
@@ -437,5 +458,20 @@ Object Unary::Eval(Environment* e)
 
 Object Binary::Eval(Environment* e)
 {
+    Object a = left->Eval(e);
+    Object b = right->Eval(e);
+
+    //if (op == "==" || op == "!=")
+    //    return Object{ a == b };
+
+    //else if (type == INFEQUAL || type == SUPEQUAL || type == INF || type == SUP)
+    //    return 4;
+
+    //else if (type == ADD || type == SUB)
+    //    return {a + b};
+
+    //else if (type == MUL || type == DIV)
+    //    return 6;
+
     return Object{};
 }

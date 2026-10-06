@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "Types.h"
+
 struct Environment;
 
 enum StmtType
@@ -280,6 +281,7 @@ struct Call : public Expr
 	ID id = FUNC_NONE;
 	std::string name = "";
 	std::vector<std::unique_ptr<Expr>> params;
+	Type return_type = Type::TYPE_VOID;
 
 	Call(Call::ID _id, std::string _name) : Expr(CALL)
 	{
@@ -320,10 +322,12 @@ struct Literal : public Expr
 struct Variable : public Expr
 {
 	std::string name = "";
+	Type var_type = Type::TYPE_VOID;
 
-	Variable(std::string _name) : Expr(VARIABLE)
+	Variable(std::string _name, Type _var_type) : Expr(VARIABLE)
 	{
 		name = _name;
+		var_type = _var_type;
 	}
 
 	void Print() override

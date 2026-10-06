@@ -1,6 +1,13 @@
 #pragma once
 #include <variant>
 
+enum Type
+{
+	TYPE_VOID,
+	TYPE_TROOP,
+	TYPE_FLOAT
+};
+
 struct alignas(32) Troop
 {
 	float cost = 0;
