@@ -291,10 +291,11 @@ struct Call : public Expr
 
 	void Print() override
 	{
-		std::cout << "FUNCTION | " << name << "(";
+		std::cout << "CALL | " << name << "( ";
 		for (std::unique_ptr<Expr>& stmt : params)
 		{
 			stmt->Print();
+			std::cout << " ";
 		}
 		std::cout << ")\n";
 	}

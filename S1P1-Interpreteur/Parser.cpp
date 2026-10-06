@@ -228,6 +228,10 @@ std::unique_ptr<Expr> Parser::ParseCall()
         }
 
         call->params.push_back(std::move(ParseExpr()));
+        
+        if (Peek()->type == TokenType::COMMA)
+            Advance();
+
         params_count++;
     }
 
@@ -547,7 +551,49 @@ void ValStmt::Execute(Environment* e)
 
 Object Call::Eval(Environment* e)
 {
-    return Object();
+    Object return_val = std::monostate();
+
+    switch (id)
+    {
+    case Call::ID::GET_ALIVE_TROOPS:
+        return_val = e->GetAliveTroops();
+        break;
+
+    case Call::ID::GET_ALIVE_TROOPS_IN_TEAM:
+        return_val = e->GetAliveTroopsInTeam(std::get<float>(params[0]->Eval(e)));
+        break;
+
+    case Call::ID::GET_ELAPSED_TIME:
+        return_val = e->GetElapsedTime();
+        break;
+
+    case Call::ID::SPAWN:
+        e->Spawn(std::get<Troop>(params[0]->Eval(e)),
+            std::get<float>(params[1]->Eval(e)),
+            std::get<float>(params[2]->Eval(e)),
+            std::get<float>(params[3]->Eval(e)));
+
+        break;
+
+    case Call::ID::SPAWN_MULTIPLE:
+        e->SpawnMultiple(std::get<Troop>(params[0]->Eval(e)),
+            std::get<float>(params[1]->Eval(e)),
+            std::get<float>(params[2]->Eval(e)),
+            std::get<float>(params[3]->Eval(e)),
+            std::get<float>(params[4]->Eval(e)));
+
+        break;
+
+    case Call::ID::TIME_SCALE:
+        e->TimeScale(std::get<float>(params[0]->Eval(e)));
+        break;
+
+    default:
+        Debug::FatalError("INVALID FUNCTION DETECTED");
+        break;
+    }
+
+    return Object{return_val};
 }
 
 Object Literal::Eval(Environment* e)
@@ -557,16 +603,7 @@ Object Literal::Eval(Environment* e)
 
 Object Variable::Eval(Environment* e)
 {
-    if (var_type == Type::TYPE_FLOAT)
-    {
-        
-    }
-    else if (var_type == Type::TYPE_TROOP)
-    {
-
-    }
-
-    return Object{};
+    return e->Read(name);
 }
 
 Object Grouping::Eval(Environment* e)
@@ -630,5 +667,6 @@ Object Binary::Eval(Environment* e)
     else if (op == "/")
         return Object{ float(fa / fb) };
 
+    Debug::FatalError("OPERATOR COULDNT BE EVALUATED");
     return Object{};
 }

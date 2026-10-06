@@ -21,6 +21,8 @@ void Lexer::Tokenize(const char* path)
 			continue;
 		case(' '):
 			continue;
+		case('\t'):
+			continue;
 
 		case('.'):
 			AddToken(DOT);
@@ -195,7 +197,7 @@ char Lexer::GetNextChar()
 		start = current;
 		line++;
 	}
-	else if (c == ' ')
+	else if (c == ' ' || c == '\t')
 		start = current;
 
 	col++;
@@ -240,7 +242,7 @@ bool Lexer::IsAnIdentifier()
 	if (isLetter(current_char) == false) //The first char need to be a letter
 		is_valid = false;
 
-	while (current_char != '\0' && current_char != '\n' && current_char != ' ')
+	while (current_char != '\0' && current_char != '\n' && current_char != ' ' && current_char != '\t')
 	{
 		if (isDigit(current_char) == false && isLetter(current_char) == false) //neither a letter or a digit
 			break;
@@ -333,7 +335,7 @@ bool Lexer::Match(const char* match_text, int size)
 	if (current + i < text.size())
 	{
 		char next_char = text[current + i];
-		if (next_char != ' ' && next_char != '\n')
+		if ((next_char != ' ' && next_char != '(' && next_char != ')' && next_char != '\t') && next_char != '\n')
 			return false;
 	}
 
