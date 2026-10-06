@@ -2,11 +2,13 @@
 
 void SemanticAnalyser::AnalyseStmt()
 {
+	AddDatasBlock();
 	for ( actualStmt = 0; actualStmt < stmtList.size(); actualStmt++)
 	{
 		SemanticSwitch(stmtList[actualStmt].get());
 
 	}
+	AddDatasBlock(true);
 }
 void SemanticAnalyser::SemanticSwitch(Stmt* stmt)
 {
@@ -92,14 +94,14 @@ void SemanticAnalyser::SemanticIf(Stmt* stmt)
 	if (expr->left->type == ExprType::VARIABLE)
 	{
 		Variable* var = static_cast<Variable*>(expr->left.get());
-		if (!typeMap.contains(var->name))
-			Debug::FatalError("Var missing");
+		if (CheckValue(var->name))
+			Debug::FatalError("Var left missing");
 	}
 	if (expr->right->type == ExprType::VARIABLE )
 	{
 		Variable* var = static_cast<Variable*>(expr->left.get());
-		if (!typeMap.contains(var->name))
-			Debug::FatalError("Var missing");
+		if (CheckValue(var->name))
+			Debug::FatalError("Var right missing");
 	}
 	return ;
 }
@@ -122,13 +124,14 @@ void SemanticAnalyser::SemanticWhile(Stmt* stmt)
 	if (expr->left->type == ExprType::VARIABLE)
 	{
 		Variable* var = static_cast<Variable*>(expr->left.get());
-		ValInBlock(var->name, Type::TYPE_FLOAT);
-
+		if (CheckValue(var->name))
+			Debug::FatalError("Var left missing");
 	}
 	if (expr->right->type == ExprType::VARIABLE)
 	{
 		Variable* var = static_cast<Variable*>(expr->left.get());
-		ValInBlock(var->name, Type::TYPE_FLOAT);
+		if (CheckValue(var->name))
+			Debug::FatalError("Var right missing");
 	}
 
 	return ;
@@ -203,6 +206,7 @@ void SemanticAnalyser::SemanticBlock(Stmt* stmt)
 		actualStmt++;
 		SemanticSwitch(stmtInBlock.get());
 	}
+	AddDatasBlock(true);
 }
 
 void SemanticAnalyser::SemanticVal(Stmt* stmt)
@@ -211,7 +215,7 @@ void SemanticAnalyser::SemanticVal(Stmt* stmt)
 	ExprType type = valStmt->expr.get()->type;
 
 
-	if (type == ExprType::VARIABLE || type == ExprType::LITERAL)
+	if (type == ExprType::VARIABLE || type == ExprType::LITERAL || type == ExprType::CALL)
 	{
 		if (valStmt->name == "")
 			Debug::FatalError("Missing Value ");

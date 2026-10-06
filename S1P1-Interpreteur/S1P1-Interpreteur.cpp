@@ -36,8 +36,8 @@ int main()
     Parser parser(lexer.tokens);
     parser.Parse();
 
-   /* SemanticAnalyser sem(parser.statements);
-    sem.AnalyseStmt();*/
+    SemanticAnalyser sem(parser.statements);
+    sem.AnalyseStmt();
 
     /*Environment e;
 
