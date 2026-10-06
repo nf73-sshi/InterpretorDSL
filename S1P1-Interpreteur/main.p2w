@@ -1,1 +1,8 @@
 val x = GetAliveTroopsInTeam(0)
+
+val y = 5
+if y < 5
+{
+	val z = 5
+}
+val z = 8

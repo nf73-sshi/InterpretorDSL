@@ -5,11 +5,11 @@
 
 struct SemanticAnalyser
 {
-	std::unordered_map<std::string, float> idList;
+	std::vector<std::unordered_map<std::string, Type>> datasType = {};
 
 	std::vector<std::unique_ptr<Stmt>> stmtList;
-	int actualID = 0;
 
+	int actualStmt;
 	SemanticAnalyser(std::vector<std::unique_ptr<Stmt>>& _stmtList)
 	{ 
 		for (std::unique_ptr<Stmt>& stmt : _stmtList)
@@ -20,11 +20,17 @@ struct SemanticAnalyser
 
 	void AnalyseStmt();
 public:
+	void SemanticSwitch(Stmt* stmt);
 	void SemanticAssign(Stmt* stmt);
 	void SemanticIf(Stmt* stmt);
 	void SemanticWhile(Stmt* stmt);
 	void SemanticFor(Stmt* stmt);
 	void SemanticTroop(Stmt* stmt);
-	void SemanticParam(Stmt* stmt);
+	void SemanticBlock(Stmt* stmt);
 	void SemanticVal(Stmt* stmt);
+	void SemanticExpr(Stmt* stmt);
+	void AddDatasBlock(bool remove = false);
+	bool MapExists(size_t block, std::string name) const;
+	void ValInBlock(std::string name, Type value);
+	bool CheckValue(std::string name);
 };
