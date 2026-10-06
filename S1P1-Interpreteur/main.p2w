@@ -1,11 +1,1 @@
-val x = GetAliveTroopsInTeam(0)
-
-val y = 5
-
-if x < 5
-val z = 0
-
-else
-val y = 0
-
-val z = 8
+val x = 1 + 2 + 3 + 4

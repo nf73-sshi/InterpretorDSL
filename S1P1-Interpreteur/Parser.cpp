@@ -577,30 +577,58 @@ Object Grouping::Eval(Environment* e)
 Object Unary::Eval(Environment* e)
 {
     Object a = right->Eval(e);
+    float fa = 0;
 
-    if(right->type == LITERAL)
+    fa = std::get<float>(a);
 
-    return Object{};
+    if (symbol == "!")
+    {
+        fa = !fa;
+    }
+    else if (symbol == "-")
+    {
+        fa = -fa;
+    }
+
+    return Object{fa};
 }
 
 Object Binary::Eval(Environment* e)
 {
-   /* Object a = left->Eval(e);
+    Object a = left->Eval(e);
     Object b = right->Eval(e);
 
-    
+    float fa = std::get<float>(a);
+    float fb = std::get<float>(b);
 
-    if (op == "==" || op == "!=")
-        return Object{ a == b };
+    if (op == "==")
+        return Object{ float(fa == fb) };
+    else if(op == "!=")
+        return Object{ float(fa != fb) };
 
-    else if (type == INFEQUAL || type == SUPEQUAL || type == INF || type == SUP)
-        return 4;
+    else if (op == "<=")
+        return Object{ float(fa <= fb) };
 
-    else if (type == ADD || type == SUB)
-        return {a + b};
+    else if (op == ">=")
+        return Object{ float(fa >= fb) };
 
-    else if (type == MUL || type == DIV)
-        return 6;*/
+    else if (op == "<")
+        return Object{ float(fa < fb) };
+
+    else if (op == ">")
+        return Object{ float(fa > fb) };
+
+    else if (op == "+")
+        return Object{ float(fa + fb) };
+
+    else if (op == "-")
+        return Object{ float(fa - fb) };
+
+    else if (op == "*")
+        return Object{ float(fa * fb) };
+
+    else if (op == "/")
+        return Object{ float(fa / fb) };
 
     return Object{};
 }

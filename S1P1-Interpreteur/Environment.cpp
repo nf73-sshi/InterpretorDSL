@@ -38,17 +38,7 @@ bool Environment::Exists(std::string name) const
 void Environment::Write(std::string name, Object value)
 {
 	size_t current_block = datas.size() - 1;
-
-	while (current_block >= 0)
-	{
-		if (Exists(current_block, name))
-		{
-			datas[current_block][name] = value;
-			return;
-		}
-
-		current_block--;
-	}
+	datas[current_block][name] = value;
 }
 
 Object Environment::Read(std::string name)
