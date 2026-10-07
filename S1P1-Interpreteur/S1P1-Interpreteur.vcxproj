@@ -147,6 +147,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Benchmark.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="Lexer.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="TreeWalker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Benchmark.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Environment.h" />
     <ClInclude Include="Lexer.h" />

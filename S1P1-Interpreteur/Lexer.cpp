@@ -122,31 +122,12 @@ void Lexer::Tokenize(const char* path)
 				AddToken(WHILE);
 				continue;
 			}
-		case('r'):
-			if (Match("eturn", 5))
-			{
-				AddToken(RETURN);
-				continue;
-			}
 		case('v'):
 			if (Match("al", 2))
 			{
 				AddToken(VAL);
 				continue;
 			}
-		case('b'):
-			if (Match("reak", 4))
-			{
-				AddToken(BREAK);
-				continue;
-			}
-		case('c'):
-			if (Match("ontinue", 7))
-			{
-				AddToken(CONTINUE);
-				continue;
-			}
-
 		case('T'):
 			if (Match("roop", 4))
 			{

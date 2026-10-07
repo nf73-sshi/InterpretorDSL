@@ -276,6 +276,8 @@ struct Call : public Expr
 		GET_ALIVE_TROOPS_IN_TEAM,
 		GET_ELAPSED_TIME,
 		TIME_SCALE,
+
+		UPDATE,
 	};
 
 	ID id = FUNC_NONE;

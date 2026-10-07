@@ -2,6 +2,11 @@
 #include "Parser.h"
 #include "Debug.h"
 
+Environment::Environment()
+{
+	begin = std::chrono::high_resolution_clock::now();
+}
+
 void Environment::AddBlock(bool remove)
 {
 	if (remove == false)
@@ -144,7 +149,8 @@ float Environment::GetAliveTroopsInTeam(float team_id)
 float Environment::GetElapsedTime()
 {
 	Debug::Log("GetElapsedTime Called\n");
-	return 0.0f;
+	std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+	return (now - begin).count() / 1'000'000.f;
 }
 
 void Environment::Spawn(Troop troop, float x, float y, float team_id)
@@ -160,4 +166,10 @@ void Environment::SpawnMultiple(Troop troop, float x, float y, float amount, flo
 void Environment::TimeScale(float scale)
 {
 	Debug::Log("TimeScale Called : scale = ", scale, "\n");
+}
+
+void Environment::Update()
+{
+	Debug::Log("Update Called\n");
+	return;
 }

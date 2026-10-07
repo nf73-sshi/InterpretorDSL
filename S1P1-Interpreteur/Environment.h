@@ -3,10 +3,13 @@
 #include <vector>
 #include <unordered_map>
 #include "Types.h"
+#include <chrono>
 
 struct Environment
 {
 	std::vector<std::unordered_map<std::string, Object>> datas = {};
+
+	Environment();
 
 	void AddBlock(bool remove = false); // if true, it removes the last block
 	bool Exists(size_t block, std::string name) const;
@@ -23,5 +26,9 @@ struct Environment
 	void Spawn(Troop troop, float x, float y, float team_id);
 	void SpawnMultiple(Troop troop, float x, float y, float amount, float team_id);
 	void TimeScale(float scale);
+
+	void Update();
+private:
+	std::chrono::steady_clock::time_point begin;
 };
 

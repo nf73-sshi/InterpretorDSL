@@ -1,12 +1,12 @@
 // Troop ebarb = cost:69 hp:420 dmg:80 radius:5 fatkspeed:0.1 atkspeed:1 speed:10 range:0.5
 SpawnMultiple(ebarb, -0.5, 0.5, 10, 1) //
 
-val x = 0
-
+val x = 0.0
 val i = 10
+
 
 while (i > 0)
 {
-	x = x + i
+	Update()
 	i = i - 1
 }

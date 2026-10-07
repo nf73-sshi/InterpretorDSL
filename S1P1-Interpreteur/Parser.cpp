@@ -290,6 +290,12 @@ std::unique_ptr<Expr> Parser::ParseCall()
         call->return_type = Type::TYPE_FLOAT;
         needed_params = 1; //scale
     }
+    else if (call_name == "Update")
+    {
+        call->id = Call::ID::UPDATE;
+        call->return_type = Type::TYPE_VOID;
+        needed_params = 0; //scale
+    }
     else // Function not found !
         Debug::SyntaxError(call_t, "THIS FUNCTION DOESN'T EXISTS");
 
@@ -592,7 +598,6 @@ Object Call::Eval(Environment* e)
             std::get<float>(params[1]->Eval(e)),
             std::get<float>(params[2]->Eval(e)),
             std::get<float>(params[3]->Eval(e)));
-
         break;
 
     case Call::ID::SPAWN_MULTIPLE:
@@ -601,11 +606,14 @@ Object Call::Eval(Environment* e)
             std::get<float>(params[2]->Eval(e)),
             std::get<float>(params[3]->Eval(e)),
             std::get<float>(params[4]->Eval(e)));
-
         break;
 
     case Call::ID::TIME_SCALE:
         e->TimeScale(std::get<float>(params[0]->Eval(e)));
+        break;
+
+    case Call::ID::UPDATE:
+        e->Update();
         break;
 
     default:
