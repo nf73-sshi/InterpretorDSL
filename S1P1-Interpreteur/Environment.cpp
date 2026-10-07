@@ -37,19 +37,65 @@ bool Environment::Exists(std::string name) const
 
 void Environment::Write(std::string name, Object value)
 {
-	Debug::Log("Var written : ", name);
+	int current_block = datas.size() - 1;
+
+	while (current_block >= 0)
+	{
+		if (Exists(current_block, name))
+		{
+			Debug::Log("Var written : ", name);
+
+			if (std::holds_alternative<float>(value))
+			{
+				std::cout << " = " << std::get<float>(value);
+			}
+			else if (std::holds_alternative<Troop>(value))
+			{
+				std::cout << " = Troop";
+			}
+
+			datas[current_block][name] = value;
+
+			std::cout << " | BLOCK " << current_block << "\n";
+			return;
+		}
+
+		current_block--;
+	}
+
+	Debug::FatalError("VARIABLE ", name, " NOT FOUND");
+}
+
+void Environment::Add(std::string name, Object value)
+{
+	int current_block = datas.size() - 1;
+
+	while (current_block >= 0)
+	{
+		if (Exists(current_block, name))
+		{
+			Debug::FatalError("VAR ALREADY ADDED");
+			return;
+		}
+
+		current_block--;
+	}
+
+	Debug::Log("Var added : ", name);
 
 	if (std::holds_alternative<float>(value))
 	{
-		std::cout << " = " << std::get<float>(value) << "\n";
+		std::cout << " = " << std::get<float>(value);
 	}
 	else if (std::holds_alternative<Troop>(value))
 	{
-		std::cout << " = Troop\n";
+		std::cout << " = Troop";
 	}
 
-	size_t current_block = datas.size() - 1;
+	current_block = datas.size() - 1;
 	datas[current_block][name] = value;
+
+	std::cout << " | BLOCK " << current_block << "\n";
 }
 
 Object Environment::Read(std::string name)
@@ -65,13 +111,14 @@ Object Environment::Read(std::string name)
 
 			if(std::holds_alternative<float>(o))
 			{
-				std::cout << " = " << std::get<float>(o) << "\n";
+				std::cout << " = " << std::get<float>(o);
 			}
 			else if (std::holds_alternative<Troop>(o))
 			{
-				std::cout << " = Troop\n";
+				std::cout << " = Troop";
 			}
 
+			std::cout << " | BLOCK " << current_block << "\n";
 			return o;
 		}
 
@@ -85,7 +132,7 @@ Object Environment::Read(std::string name)
 float Environment::GetAliveTroops()
 {
 	Debug::Log("GetAliveTroops Called\n");
-	return 1.f;
+	return 0.f;
 }
 
 float Environment::GetAliveTroopsInTeam(float team_id)

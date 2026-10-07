@@ -409,7 +409,13 @@ struct Parser
 public:
 	Parser(std::vector<Token> tokenList) { tokens = tokenList; };
 
-	bool IsAtEnd() const { return current >= tokens.size() || current < 0; }
+	bool IsAtEnd(int val = -1) const 
+	{ 
+		if (val == -1)
+			return current >= tokens.size() || current < 0;
+		else
+			return val >= tokens.size() || val < 0;
+	}
 
 	Token* Peek() 
 	{ 
@@ -428,14 +434,14 @@ public:
 	}
 	Token* Previous()
 	{
-		if (IsAtEnd())
+		if (IsAtEnd(current-1))
 			return nullptr;
 
 		return &tokens[current-1];
 	}
 	Token* Next()
 	{
-		if (IsAtEnd())
+		if (IsAtEnd(current+1))
 			return nullptr;
 
 		return &tokens[current+1];
@@ -448,6 +454,7 @@ private:
 	std::unique_ptr<Stmt> ParseExprStmt();
 	std::unique_ptr<Stmt> ParseAssignement();
 	std::unique_ptr<Stmt> ParseParam();
+	void ParseCommentary();
 
 	std::unique_ptr<Stmt> ParseVal();
 	std::unique_ptr<Stmt> ParseTroop();

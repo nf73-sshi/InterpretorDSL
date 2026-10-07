@@ -25,6 +25,12 @@ std::unique_ptr<Stmt> Parser::ParseStmt()
 
     switch (current->type)
     {
+    case TokenType::COMMENTARY:
+        ParseCommentary();
+        current = Peek();
+        stmt = ParseStmt();
+        break;
+
     case TokenType::IF:
         stmt = ParseIf();
         break;
@@ -102,6 +108,17 @@ std::unique_ptr<Stmt> Parser::ParseParam()
     }
 
     return std::make_unique<ParamStmt>(val->GetLexeme(), ParseExpr());
+}
+
+void Parser::ParseCommentary()
+{
+    Advance(); // //
+    while (Peek()->type != TokenType::COMMENTARY)
+    {
+        Advance();
+    }
+
+    Advance();
 }
 
 std::unique_ptr<Stmt> Parser::ParseVal()
@@ -363,7 +380,7 @@ std::unique_ptr<Expr> Parser::Prefix()
         return std::make_unique<Literal>(0.f);
 
     case TokenType::IDENTIFIER:
-        if (Next()->type == TokenType::LPARENTHESIS)
+        if (Next() != nullptr && (Next()->type == TokenType::LPARENTHESIS))
         {
             return ParseCall();
         }
@@ -477,7 +494,7 @@ void TroopStmt::Execute(Environment* e)
         Debug::FatalError("TROOP ERROR, ALL PARAMETERS NEED TO BE SETTED");
     }
 
-    e->Write(var_name, t);
+    e->Add(var_name, t);
 }
 
 void BlockStmt::Execute(Environment* e)
@@ -507,9 +524,12 @@ void IfStmt::Execute(Environment* e)
 
 void WhileStmt::Execute(Environment* e)
 {
-    while(std::get<float>(condition->Eval(e)) != 0.0f) //float != 0.0f
+    float c = std::get<float>(condition->Eval(e));
+
+    while(c != 0.0f) //float != 0.0f
     {
         then->Execute(e);
+        c = std::get<float>(condition->Eval(e));
     }
 }
 
@@ -546,7 +566,7 @@ void ForStmt::Execute(Environment* e)
 
 void ValStmt::Execute(Environment* e)
 {
-    e->Write(name, expr->Eval(e));
+    e->Add(name, expr->Eval(e));
 }
 
 Object Call::Eval(Environment* e)

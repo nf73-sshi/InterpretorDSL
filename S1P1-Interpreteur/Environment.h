@@ -12,6 +12,8 @@ struct Environment
 	bool Exists(size_t block, std::string name) const;
 	bool Exists(std::string name) const;
 	void Write(std::string name, Object value);
+	void Add(std::string name, Object value);
+
 	Object Read(std::string name);
 
 	//Builts In

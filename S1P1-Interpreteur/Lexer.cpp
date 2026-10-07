@@ -65,7 +65,7 @@ void Lexer::Tokenize(const char* path)
 			AddToken(MUL);
 			continue;
 		case('/'):
-			AddToken(DIV);
+			AddToken(Match("/", 1) ? COMMENTARY : DIV);
 			continue;
 
 		case('>'):
