@@ -6,7 +6,7 @@ Troop golem = cost:0 hp:1000 dmg:10 radius:3 fatkspeed:0.5 atkspeed:2.0 speed:0.
 SpawnMultiple(ebarb, 0, 0, 10, 0)
 SpawnMultiple(ebarb, 1, 1, 10, 1)
 
-while state
+if state
 {
 	Update()
 	state = IsBattling()

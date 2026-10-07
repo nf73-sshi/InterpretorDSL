@@ -68,6 +68,12 @@ void SemanticAnalyser::SemanticAssign(Stmt* stmt)
 			ValInBlock(asnStmt->name, Type::TYPE_FLOAT);
 		return ;
 	}
+	else if (type == ExprType::CALL)
+	{
+		Call* call = static_cast<Call*>(asnStmt->expr.get());
+		if (call->name == "")
+			Debug::FatalError("Var name missing");
+	}
 	else
 		Debug::FatalError("wrong Statement");
 }
@@ -112,6 +118,12 @@ void SemanticAnalyser::SemanticIf(Stmt* stmt)
 		else if (CheckValue(var->name))
 			Debug::FatalError("Var right missing");
 	}
+	else if (type == ExprType::CALL)
+	{
+		Call * call = static_cast<Call*>(ifStmt->condition.get());
+		if (call->name == "")
+			Debug::FatalError("Var name missing");
+	}
 	else
 		Debug::FatalError("Wrong expression");
 }
@@ -151,6 +163,12 @@ void SemanticAnalyser::SemanticWhile(Stmt* stmt)
 			Debug::FatalError("Var name missing");
 		else if	(CheckValue(var->name))
 			Debug::FatalError("Var right missing");
+	}
+	else if (type == ExprType::CALL)
+	{
+		Call* call = static_cast<Call*>(whileStmt->condition.get());
+		if (call->name == "")
+			Debug::FatalError("Var name missing");
 	}
 	else
 		Debug::FatalError("Wrong expression");
@@ -269,10 +287,10 @@ void SemanticAnalyser::SemanticExpr(Stmt* stmt)
 		Call* call = static_cast<Call*>(ExprStmt->expr.get());
 		for (std::unique_ptr<Expr>& expr : call->params)
 		{
-			if (expr->type != ExprType::LITERAL || expr->type != ExprType::VARIABLE)
-			{
-
-			}
+			if (expr->type == ExprType::LITERAL || expr->type == ExprType::VARIABLE)
+				return;
+			else 
+				Debug::FatalError("Wrong Expression");
 		}
 	}
 }
