@@ -36,13 +36,13 @@ int main()
     Parser parser(lexer.tokens);
     parser.Parse();
 
-  /*  SemanticAnalyser sem(parser.statements);
-    sem.AnalyseStmt();*/
+    SemanticAnalyser sem(parser.statements);
+    sem.AnalyseStmt();
 
     Environment e;
 
-    TreeWalker tree_walker(parser.statements);
-    tree_walker.Execute(&e);
+ /*   TreeWalker tree_walker(parser.statements);
+    tree_walker.Execute(&e);*/
 
   /*  std::vector<Troop*> troopList;
     Troop t =

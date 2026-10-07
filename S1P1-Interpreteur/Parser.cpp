@@ -14,7 +14,7 @@ void Parser::Parse()
 
     for (std::unique_ptr<Stmt>& stmt : statements)
     {
-        stmt->Print();
+       // stmt->Print();
     }
 }
 

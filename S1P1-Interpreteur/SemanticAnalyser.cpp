@@ -12,6 +12,7 @@ void SemanticAnalyser::AnalyseStmt()
 }
 void SemanticAnalyser::SemanticSwitch(Stmt* stmt)
 {
+		stmt->Print();
 	switch (stmt->type)
 	{
 	case ASSIGN_STMT:
@@ -219,6 +220,18 @@ void SemanticAnalyser::SemanticVal(Stmt* stmt)
 			Debug::FatalError("Missing Value ");
 
 			ValInBlock(valStmt->name, Type::TYPE_FLOAT);
+	}
+	else if (type == ExprType::BINARY)
+	{
+		if (valStmt->name == "")
+			Debug::FatalError("Missing Value ");
+		Binary* expr = static_cast<Binary*>(valStmt->expr.get());
+		if (expr->left == nullptr)
+			Debug::FatalError("value missing");
+		if (expr->right == nullptr)
+			Debug::FatalError("value missing");
+		if (expr->op == "")
+			Debug::FatalError("value missing");
 	}
 	else
 		Debug::FatalError("Wrong Expression");
