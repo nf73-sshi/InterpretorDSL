@@ -36,15 +36,15 @@ int main()
     Parser parser(lexer.tokens);
     parser.Parse();
 
-    SemanticAnalyser sem(parser.statements);
-    sem.AnalyseStmt();
+  /*  SemanticAnalyser sem(parser.statements);
+    sem.AnalyseStmt();*/
 
     Environment e;
 
     TreeWalker tree_walker(parser.statements);
     tree_walker.Execute(&e);
 
-    std::vector<Troop*> troopList;
+  /*  std::vector<Troop*> troopList;
     Troop t =
     {
      t.hp = 50.f ,t.dmg = 1.f ,t.atkspeed = 2.F,t.fatkspeed = 0.5f,
@@ -60,6 +60,6 @@ int main()
     {
         sim.Update();
         loop++;
-    }
+    }*/
     return 0;
 }

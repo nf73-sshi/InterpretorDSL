@@ -1,11 +1,20 @@
-// Troop ebarb = cost:69 hp:420 dmg:80 radius:5 fatkspeed:0.1 atkspeed:1 speed:10 range:0.5
-SpawnMultiple(ebarb, -0.5, 0.5, 10, 1) //
+val x = GetAliveTroops() + GetAliveTroopsInTeam(0)
+val y = x + 1
 
-val x = 0.0
-val i = 10
-
-while (i > 0)
+for val i = 0, 10
 {
+	val z = (i * 2) + 1
+}
+
+val iterations = 10
+
+while iterations > 0
+{
+	if iterations == 5
+		val yess = 69
+	else
+		val nooo = -1
+
 	Update()
-	i = i - 1
+	iterations = iterations - 1
 }

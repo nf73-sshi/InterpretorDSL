@@ -7,14 +7,14 @@ struct SemanticAnalyser
 {
 	std::vector<std::unordered_map<std::string, Type>> datasType = {};
 
-	std::vector<std::unique_ptr<Stmt>> stmtList;
+	std::vector<Stmt*> stmtList = {};
 
 	int actualStmt;
 	SemanticAnalyser(std::vector<std::unique_ptr<Stmt>>& _stmtList)
 	{ 
 		for (std::unique_ptr<Stmt>& stmt : _stmtList)
 		{
-			stmtList.push_back(std::move(stmt));
+			stmtList.push_back(stmt.get());
 		}
 	};
 

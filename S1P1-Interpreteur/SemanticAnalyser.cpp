@@ -5,15 +5,13 @@ void SemanticAnalyser::AnalyseStmt()
 	AddDatasBlock();
 	for ( actualStmt = 0; actualStmt < stmtList.size(); actualStmt++)
 	{
-		SemanticSwitch(stmtList[actualStmt].get());
+		SemanticSwitch(stmtList[actualStmt]);
 
 	}
 	AddDatasBlock(true);
 }
 void SemanticAnalyser::SemanticSwitch(Stmt* stmt)
 {
-	stmtList[actualStmt]->Print();
-
 	switch (stmt->type)
 	{
 	case ASSIGN_STMT:
