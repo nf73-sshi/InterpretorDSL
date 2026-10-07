@@ -4,7 +4,6 @@ SpawnMultiple(ebarb, -0.5, 0.5, 10, 1) //
 val x = 0.0
 val i = 10
 
-
 while (i > 0)
 {
 	Update()
