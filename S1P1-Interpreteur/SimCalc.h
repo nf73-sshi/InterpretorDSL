@@ -4,18 +4,35 @@
 
 struct SimCalc
 {
-	std::vector<float> posX , posY ,hpList, radiusList, dmgList ,attackSpeedList;
-	std::vector<int> id;
-	std::vector<Troop*> troopsList;
-	std::vector<SpawnTroop> spawnTroopList;
-	float dt = 0.0016f;
+	std::vector<float> posX , posY ,healthpoints, damages, progress_atkspeeds, ranges;
+	std::vector<int> team_ids;
+
+	std::vector<SpawnTroop> spawn_troops;
+
 public:
-	SimCalc(std::vector<Troop*> troops);
-	void CreateRandomPosition();
-	void Update();
-	void UpdateAttackSpeed();
+	SimCalc();
+
+	void UpdateSIMD(float dt);
+	void UpdateScalar(float dt);
+
+	void UpdateAtkSpeedSIMD(float dt);
+	void UpdateAtkSpeedScalar(float dt);
+
+	void UpdateLivingSIMD();
+	void UpdateLivingScalar();
+
 	void TroopPrint();
-	void TroopAttack(std::vector<int>& indexes);
-	void CreateAllInstance();
+
+	void UpdateAttackSIMD(std::vector<size_t>& indexes);
+	void UpdateAttackScalar(std::vector<size_t>& indexes);
+
+	void AddSpawnTroop(SpawnTroop& sp, float x, float y, float team_id);
+	void RemoveSpawnTroop(size_t index);
+
+	float GetAliveTroops() const;
+	float GetAliveTroopsInTeam(int team_id) const;
+
+	float IsBattling();
+	float GetWinnerTeam();
 };
 

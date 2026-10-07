@@ -1,20 +1,15 @@
-val x = GetAliveTroops() + GetAliveTroopsInTeam(0)
-val y = x + 1
 
-for val i = 0, 10
+val state = 1
+Troop ebarb = cost:0 hp:10 dmg:1 radius:1 fatkspeed:0.1 atkspeed:0.2 speed:1 range:1
+Troop golem = cost:0 hp:1000 dmg:10 radius:3 fatkspeed:0.5 atkspeed:2.0 speed:0.2 range:1
+
+SpawnMultiple(ebarb, 0, 0, 10, 0)
+SpawnMultiple(ebarb, 1, 1, 10, 1)
+
+while state
 {
-	val z = (i * 2) + 1
-}
-
-val iterations = 10
-
-while iterations > 0
-{
-	if iterations == 5
-		val yess = 69
-	else
-		val nooo = -1
-
 	Update()
-	iterations = iterations - 1
+	state = IsBattling()
 }
+
+val x = GetWinnerTeam()

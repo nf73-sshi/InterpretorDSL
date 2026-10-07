@@ -5,8 +5,13 @@
 #include "Types.h"
 #include <chrono>
 
+constexpr float FIXED_DT = 0.016f;
+struct SimCalc;
+
 struct Environment
 {
+	SimCalc* game = nullptr;
+
 	std::vector<std::unordered_map<std::string, Object>> datas = {};
 
 	Environment();
@@ -22,12 +27,14 @@ struct Environment
 	//Builts In
 	float GetAliveTroops();
 	float GetAliveTroopsInTeam(float team_id);
+	float IsBattling();
 	float GetElapsedTime();
 	void Spawn(Troop troop, float x, float y, float team_id);
 	void SpawnMultiple(Troop troop, float x, float y, float amount, float team_id);
-	void TimeScale(float scale);
 
+	float GetWinnerTeam();
 	void Update();
+
 private:
 	std::chrono::steady_clock::time_point begin;
 };

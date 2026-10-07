@@ -278,17 +278,23 @@ std::unique_ptr<Expr> Parser::ParseCall()
         call->return_type = Type::TYPE_VOID;
         needed_params = 5; //troop, x, y, count, team_id
     }
+    else if (call_name == "IsBattling")
+    {
+        call->id = Call::ID::IS_BATTLING;
+        call->return_type = Type::TYPE_FLOAT;
+        needed_params = 0;
+    }
+    else if (call_name == "GetWinnerTeam")
+    {
+        call->id = Call::ID::GET_WINNER_TEAM;
+        call->return_type = Type::TYPE_FLOAT;
+        needed_params = 0;
+    }
     else if (call_name == "GetElapsedTime")
     {
         call->id = Call::ID::GET_ELAPSED_TIME;
         call->return_type = Type::TYPE_FLOAT;
         needed_params = 0;
-    }
-    else if (call_name == "TimeScale")
-    {
-        call->id = Call::ID::TIME_SCALE;
-        call->return_type = Type::TYPE_FLOAT;
-        needed_params = 1; //scale
     }
     else if (call_name == "Update")
     {
@@ -608,8 +614,12 @@ Object Call::Eval(Environment* e)
             std::get<float>(params[4]->Eval(e)));
         break;
 
-    case Call::ID::TIME_SCALE:
-        e->TimeScale(std::get<float>(params[0]->Eval(e)));
+    case Call::ID::IS_BATTLING:
+        return_val = e->IsBattling();
+        break;
+
+    case Call::ID::GET_WINNER_TEAM:
+        return_val = e->GetWinnerTeam();
         break;
 
     case Call::ID::UPDATE:

@@ -1,124 +1,425 @@
 #include "SimCalc.h"
 #include <random>
 #include <iostream>
-SimCalc::SimCalc(std::vector<Troop*> troops)
+
+SimCalc::SimCalc()
 {
-	std::srand(std::time(0));
-	{ troopsList = troops; }
-	CreateAllInstance();
-	CreateRandomPosition();
 }
 
-void SimCalc::CreateRandomPosition()
+void SimCalc::UpdateSIMD(float dt)
 {
-	for (int i = 0; i < spawnTroopList.size(); i++)
-	{
-		posX.push_back(std::rand() % 10);
-		posY.push_back(std::rand() % 10);
-	}
+	UpdateAtkSpeedSIMD(dt);
+	UpdateLivingSIMD();
 }
 
-void SimCalc::Update()
+void SimCalc::UpdateScalar(float dt)
 {
-	UpdateAttackSpeed();
-	TroopPrint();
-
+	UpdateAtkSpeedScalar(dt);
+	UpdateLivingScalar();
 }
 
-void SimCalc::UpdateAttackSpeed()
+void SimCalc::UpdateAtkSpeedSIMD(float dt)
 {
 	size_t i = 0;
-	size_t size = attackSpeedList.size();
+	size_t size = progress_atkspeeds.size();
 
-	__m128 deltaTime = _mm_set1_ps(dt);
+	__m128 deltaTime = _mm_set_ps1(dt);
 
-	for (; i + 4 <= size; i += 4)
+	std::vector<size_t> indexes; //tab with troops which can attack
+
+	for (; i + 3 < size; i += 4)
 	{
-		__m128 AS = _mm_loadu_ps(&attackSpeedList[i]);
-
+		__m128 AS = _mm_loadu_ps(&progress_atkspeeds[i]);
 		__m128 sub = _mm_sub_ps(AS , deltaTime);
 
-		_mm_store_ps(&attackSpeedList[i], sub);
+		_mm_store_ps(&progress_atkspeeds[i], sub);
+
+		//check if can attack
+		__m128 m_mask = _mm_cmple_ps(sub, _mm_setzero_ps());
+		int mask = _mm_movemask_ps(m_mask);
+
+		if (mask != 0)
+		{
+			if (mask & 1) // 0001
+				indexes.push_back(i + 0);
+
+			if (mask & 2) // 0010
+				indexes.push_back(i + 1);
+
+			if (mask & 4) // 0100
+				indexes.push_back(i + 2);
+
+			if (mask & 8) // 1000
+				indexes.push_back(i + 3);
+		}
 	}
 	for (; i < size; ++i)
 	{
-		attackSpeedList[i] -= dt;
-	}
-	std::vector<int> indexes;
+		progress_atkspeeds[i] -= dt;
 
-	for (int x = 0; x < size; x++)
-	{
-		if (attackSpeedList[x] >= 0)
+		if (progress_atkspeeds[i] <= 0)
 		{
-			indexes.push_back(x);
+			indexes.push_back(i);
 		}
 	}
-	TroopAttack(indexes);
 
-	
+	UpdateAttackSIMD(indexes);
+}
 
+void SimCalc::UpdateAtkSpeedScalar(float dt)
+{
+	size_t size = progress_atkspeeds.size();
+	std::vector<size_t> indexes;
+
+	for (size_t i = 0; i < size; ++i)
+	{
+		progress_atkspeeds[i] -= dt;
+
+		if (progress_atkspeeds[i] <= 0)
+		{
+			indexes.push_back(i);
+		}
+	}
+
+	UpdateAttackScalar(indexes);
+}
+
+void SimCalc::UpdateLivingSIMD()
+{
+	size_t size = team_ids.size();
+	size_t i = 0;
+	std::vector<size_t> indexes_to_erase = {};
+
+	for (; i + 3 < size; i += 4)
+	{
+		__m128 hps = _mm_loadu_ps(&healthpoints[i]);
+
+		//check if alive
+		__m128 m_mask = _mm_cmple_ps(hps, _mm_setzero_ps());
+		int mask = _mm_movemask_ps(m_mask);
+
+		if (mask != 0)
+		{
+			if (mask & 1) // 0001
+				indexes_to_erase.push_back(i + 0);
+
+			if (mask & 2) // 0010
+				indexes_to_erase.push_back(i + 1);
+
+			if (mask & 4) // 0100
+				indexes_to_erase.push_back(i + 2);
+
+			if (mask & 8) // 1000
+				indexes_to_erase.push_back(i + 3);
+		}
+	}
+	for (; i < size; ++i)
+	{
+		if (healthpoints[i] <= 0)
+		{
+			indexes_to_erase.push_back(i);
+		}
+	}
+
+	for (size_t i = indexes_to_erase.size(); i > 0; --i)
+	{
+		RemoveSpawnTroop(indexes_to_erase[i - 1]);
+	}
+}
+
+void SimCalc::UpdateLivingScalar()
+{
+	size_t size = team_ids.size();
+	std::vector<size_t> indexes_to_erase = {};
+
+	for (size_t i = 0; i < size; ++i)
+	{
+		if (healthpoints[i] <= 0)
+		{
+			indexes_to_erase.push_back(i);
+		}
+	}
+
+	for (size_t i = indexes_to_erase.size(); i > 0; --i)
+	{
+		RemoveSpawnTroop(indexes_to_erase[i - 1]);
+	}
 }
 
 void SimCalc::TroopPrint()
 {
-	for (int i = 0; i < spawnTroopList.size(); i++)
+	for (int i = 0; i < spawn_troops.size(); i++)
 	{
-		std::cout << "Troop : " << i << " Hp : " << hpList[i] << " X : " << posX[i] << " Y : " << posY[i] << std::endl;
+		std::cout << "Troop: " << i << " [team " << team_ids[i] << "], Hp: " << healthpoints[i] << ", (" << posX[i] << ", " << posY[i] << "), Progress_atkspeed " << progress_atkspeeds[i] << std::endl;
 	}
+	std::cout << "\n";
 }
 
-void SimCalc::TroopAttack(std::vector<int>& indexes)
+void SimCalc::UpdateAttackSIMD(std::vector<size_t>& indexes)
 {
-	std::vector<int> ennemiIndex;
+	size_t attackers_size = indexes.size();
+	size_t size = team_ids.size();
 
-	for (int index : indexes)
+	for (size_t i = 0; i < attackers_size; ++i)
 	{
-		float valueIndex = 0;
+		size_t attacker_i = indexes[i];
+
+		size_t target_index = size_t(-1);
 		float minValue = -1;
-		for (int i = 0; i < posX.size(); i++)
+		__m128 m_posX1 = _mm_set_ps1(posX[attacker_i]);
+		__m128 m_posY1 = _mm_set_ps1(posY[attacker_i]);
+
+		size_t j = 0;
+		for (; j + 3 < size; j += 4) //4 tests 
 		{
-			if (i == index)
-				continue;
-			float distX = posX[index] - posX[i];
-			float distY = posY[index] - posY[i];	
+			__m128 m_posX2 = _mm_loadu_ps(&posX[j]);
+			__m128 m_posY2 = _mm_loadu_ps(&posY[j]);
 
-			float Value = distX * distX + distY * distY;
+			__m128 m_sqr_dist = _mm_sub_ps(m_posX1, m_posX2); // x1 - x2
+			m_sqr_dist = _mm_mul_ps(m_sqr_dist, m_sqr_dist); // dx * dx
 
-			if (minValue == -1)
+			__m128 m_dy = _mm_sub_ps(m_posY1, m_posY2); // y1 - y2
+			m_sqr_dist = _mm_add_ps(m_sqr_dist, _mm_mul_ps(m_dy, m_dy)); // + dy * dy
+
+			float sqr_dists[4];
+			_mm_storeu_ps(sqr_dists, m_sqr_dist);
+
+			for (size_t k = 0; k < 4; ++k)
 			{
-				minValue = distX + distY;
-				valueIndex = i;
-			}
-			else if (minValue > Value)
-			{
-				minValue = Value;
-				valueIndex = i;
+				if (team_ids[attacker_i] == team_ids[j+k] || healthpoints[j+k] <= 0)
+					continue;
+
+				if (minValue > sqr_dists[k] || minValue == -1)
+				{
+					minValue = sqr_dists[k];
+					target_index = j + k;
+				}
 			}
 		}
-		ennemiIndex.push_back(valueIndex);
-	}
+		for (; j < size; ++j)
+		{
+			if (team_ids[attacker_i] == team_ids[j] || healthpoints[j] <= 0)
+				continue;
 
-	for (int i = 0;i < indexes.size();i++)
-	{
-		std::cout << "Troop " << indexes[i] << " attaque Troop " << ennemiIndex[i] <<std::endl;
-		hpList[ennemiIndex[i]] -= dmgList[indexes[i]];
-		attackSpeedList[indexes[i]] = spawnTroopList[indexes[i]].baseAtkspeed;
+			float distX = posX[attacker_i] - posX[j];
+			float distY = posY[attacker_i] - posY[j];
+
+			float sqrDist = distX * distX + distY * distY;
+
+			if (minValue > sqrDist || minValue == -1)
+			{
+				minValue = sqrDist;
+				target_index = j;
+			}
+		}
+
+		if (target_index == size_t(-1))
+		{
+			std::cout << "Troop " << attacker_i << " has no one to attack\n";
+			continue;
+		}
+
+		healthpoints[target_index] -= damages[attacker_i];
+		progress_atkspeeds[attacker_i] = spawn_troops[attacker_i].atkspeed;
+
+		std::cout << "Troop " << attacker_i << " attacks Troop " << target_index << std::endl;
+
+		TroopPrint();
 	}
 }
 
-void SimCalc::CreateAllInstance()
+void SimCalc::UpdateAttackScalar(std::vector<size_t>& indexes)
 {
-	for (Troop* t : troopsList)
-	{
-		SpawnTroop  st;
-		st.hp = t->hp;
-		hpList.push_back(st.hp);
-		//radiusList.push_back(t->radius);
-		st.dmg = t->dmg;
-		dmgList.push_back(st.dmg);
-		st.baseAtkspeed = t->atkspeed;
-		attackSpeedList.push_back(t->fatkspeed);
+	size_t attackers_size = indexes.size();
+	size_t size = team_ids.size();
 
-		spawnTroopList.push_back(st);
+	for (size_t i = 0; i < attackers_size; ++i)
+	{
+		size_t attacker_i = indexes[i];
+		size_t target_index = -1;
+		float minValue = -1;
+
+		for (size_t j = 0; j < size; j++)
+		{
+			if (team_ids[indexes[attacker_i]] == team_ids[j] || healthpoints[j] <= 0)
+				continue;
+
+			float distX = posX[attacker_i] - posX[j];
+			float distY = posY[attacker_i] - posY[j];
+
+			float sqrDist = distX * distX + distY * distY;
+
+			if (minValue > sqrDist || minValue == -1)
+			{
+				minValue = sqrDist;
+				target_index = j;
+			}
+		}
+
+		if (target_index == size_t(-1))
+		{
+			std::cout << "Troop " << attacker_i << " has no one to attack\n";
+			continue;
+		}
+
+		healthpoints[target_index] -= damages[attacker_i];
+		progress_atkspeeds[attacker_i] = spawn_troops[attacker_i].atkspeed;
+
+		std::cout << "Troop " << attacker_i << " attaque Troop " << target_index << std::endl;
+
+		TroopPrint();
 	}
+}
+
+void SimCalc::AddSpawnTroop(SpawnTroop& sp, float x, float y, float team_id)
+{
+	spawn_troops.push_back(sp);
+
+	posX.push_back(x);
+	posY.push_back(y);
+
+	healthpoints.push_back(sp.hp);
+	damages.push_back(sp.dmg);
+
+	progress_atkspeeds.push_back(0);
+	ranges.push_back(sp.range);
+
+	team_ids.push_back(team_id);
+}
+
+void SimCalc::RemoveSpawnTroop(size_t index)
+{
+	std::swap(spawn_troops[index], spawn_troops.back());
+	spawn_troops.pop_back();
+
+	std::swap(posX[index], posX.back());
+	posX.pop_back();
+
+	std::swap(posY[index], posY.back());
+	posY.pop_back();
+
+	std::swap(healthpoints[index], healthpoints.back());
+	healthpoints.pop_back();
+
+	std::swap(damages[index], damages.back());
+	damages.pop_back();
+
+	std::swap(progress_atkspeeds[index], progress_atkspeeds.back());
+	progress_atkspeeds.pop_back();
+
+	std::swap(ranges[index], ranges.back());
+	ranges.pop_back();
+
+	std::swap(team_ids[index], team_ids.back());
+	team_ids.pop_back();
+}
+
+float SimCalc::GetAliveTroops() const
+{
+	return static_cast<float>(team_ids.size());
+}
+
+float SimCalc::GetAliveTroopsInTeam(int team_id) const
+{
+	if (team_ids.empty())
+		return 0.0f;
+
+	size_t count = 0;
+	size_t size = team_ids.size();
+	size_t i = 0;
+
+	__m128i m_ref = _mm_set1_epi32(team_id);
+
+	for (; i + 3 < size; i += 4)
+	{
+		__m128i m_team_ids = _mm_loadu_epi32((const void*)&team_ids[i]);
+		__m128i m_mask = _mm_cmpeq_epi32(m_team_ids, m_ref);
+
+		int mask = _mm_movemask_ps(_mm_castsi128_ps(m_mask)); //cast m128i in m128 to movemask_ps
+
+		if (mask != 0)
+		{
+			if (mask & 1) // 0001
+				count++;
+
+			if (mask & 2) // 0010
+				count++;
+
+			if (mask & 4) // 0100
+				count++;
+
+			if (mask & 8) // 1000
+				count++;
+		}
+	}
+	for (; i < size; ++i)
+	{
+		if (team_ids[i] == team_id)
+			count++;
+	}
+
+	return static_cast<float>(count);
+}
+
+float SimCalc::IsBattling()
+{
+	if (team_ids.empty())
+		return 0.f;
+
+	bool more_than_one_team = false;
+
+	size_t size = team_ids.size();
+	size_t i = 0;
+
+	int team_id_ref = team_ids[0];
+	__m128i m_ref = _mm_set1_epi32(team_id_ref);
+
+	for (; i + 3 < size; i += 4)
+	{
+		__m128i m_team_ids = _mm_loadu_epi32((const void*)&team_ids[i]);
+		__m128i m_mask = _mm_cmpeq_epi32(m_team_ids, m_ref);
+
+		int mask = _mm_movemask_ps(_mm_castsi128_ps(m_mask)); //cast m128i in m128 to movemask_ps
+
+		if (mask != 0b1111) //if one is not on the same team
+		{
+			more_than_one_team = true;
+			break;
+		}
+	}
+
+	for (; i < size; ++i)
+	{
+		if (team_ids[i] != team_id_ref)
+		{
+			more_than_one_team = true;
+			break;
+		}
+	}
+
+	return static_cast<float>(more_than_one_team);
+}
+
+float SimCalc::GetWinnerTeam()
+{
+	int winner = 0;
+
+	if (IsBattling())
+		winner = -1;
+
+	else if (team_ids.empty())
+		winner = -1;
+	
+	else
+	{
+		if (winner == -1)
+			std::cout << "DRAW !\n";
+		else
+		{
+			winner = team_ids[0];
+			std::cout << "TEAM " << winner << " WINS !\n";
+		}
+	}
+
+	return winner;
 }
