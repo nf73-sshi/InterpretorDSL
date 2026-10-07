@@ -153,6 +153,7 @@
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="S1P1-Interpreteur.cpp" />
     <ClCompile Include="SemanticAnalyser.cpp" />
+    <ClCompile Include="SimCalc.cpp" />
     <ClCompile Include="TreeWalker.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +162,7 @@
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="SemanticAnalyser.h" />
+    <ClInclude Include="SimCalc.h" />
     <ClInclude Include="TreeWalker.h" />
     <ClInclude Include="Types.h" />
   </ItemGroup>
