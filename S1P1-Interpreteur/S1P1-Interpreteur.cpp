@@ -41,8 +41,8 @@ int main()
 
     Environment e;
 
- /*   TreeWalker tree_walker(parser.statements);
-    tree_walker.Execute(&e);*/
+    TreeWalker tree_walker(parser.statements);
+    tree_walker.Execute(&e);
 
     return 0;
 }
