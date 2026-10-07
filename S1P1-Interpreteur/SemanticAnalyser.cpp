@@ -80,29 +80,40 @@ void SemanticAnalyser::SemanticIf(Stmt* stmt)
 	IfStmt* ifStmt = static_cast<IfStmt*>(stmt);
 	ExprType type = ifStmt->condition.get()->type;
 
-	if (type != ExprType::BINARY)
-		Debug::FatalError("Wrong expression");
-	Binary* expr = static_cast<Binary*>(ifStmt->condition.get());
-	if (expr->left == nullptr)
-		Debug::FatalError("value missing");
-	if (expr->right == nullptr)
-		Debug::FatalError("value missing");
-	if (expr->op == "")
-		Debug::FatalError("value missing");
+	if (type == ExprType::BINARY )
+	{
+		Binary* expr = static_cast<Binary*>(ifStmt->condition.get());
+		if (expr->left == nullptr)
+			Debug::FatalError("value missing");
+		if (expr->right == nullptr)
+			Debug::FatalError("value missing");
+		if (expr->op == "")
+			Debug::FatalError("value missing");
 
-	if (expr->left->type == ExprType::VARIABLE)
-	{
-		Variable* var = static_cast<Variable*>(expr->left.get());
-		if (CheckValue(var->name))
-			Debug::FatalError("Var left missing");
+		if (expr->left->type == ExprType::VARIABLE)
+		{
+			Variable* var = static_cast<Variable*>(expr->left.get());
+			if (CheckValue(var->name))
+				Debug::FatalError("Var left missing");
+		}
+		if (expr->right->type == ExprType::VARIABLE)
+		{
+			Variable* var = static_cast<Variable*>(expr->left.get());
+			if (CheckValue(var->name))
+				Debug::FatalError("Var right missing");
+		}
+		return;
 	}
-	if (expr->right->type == ExprType::VARIABLE )
+	else if (type == ExprType::VARIABLE)
 	{
-		Variable* var = static_cast<Variable*>(expr->left.get());
-		if (CheckValue(var->name))
+		Variable* var = static_cast<Variable*>(ifStmt->condition.get());
+		if (var->name == "")
+			Debug::FatalError("Var name missing");
+		else if (CheckValue(var->name))
 			Debug::FatalError("Var right missing");
 	}
-	return ;
+	else
+		Debug::FatalError("Wrong expression");
 }
 
 void SemanticAnalyser::SemanticWhile(Stmt* stmt)
@@ -110,29 +121,39 @@ void SemanticAnalyser::SemanticWhile(Stmt* stmt)
 	WhileStmt* whileStmt = static_cast<WhileStmt*>(stmt);
 	ExprType type = whileStmt->condition.get()->type;
 
-	if (type != ExprType::BINARY)
-		Debug::FatalError("Wrong expression");
-	Binary* expr = static_cast<Binary*>(whileStmt->condition.get());
-	if (expr->left == nullptr)
-		Debug::FatalError("value missing");
-	if (expr->right == nullptr)
-		Debug::FatalError("value missing");
-	if (expr->op == "")
-		Debug::FatalError("value missing");
+	if (type == ExprType::BINARY )
+	{
+		Binary* expr = static_cast<Binary*>(whileStmt->condition.get());
+		if (expr->left == nullptr)
+			Debug::FatalError("value missing");
+		if (expr->right == nullptr)
+			Debug::FatalError("value missing");
+		if (expr->op == "")
+			Debug::FatalError("value missing");
 
-	if (expr->left->type == ExprType::VARIABLE)
-	{
-		Variable* var = static_cast<Variable*>(expr->left.get());
-		if (CheckValue(var->name))
-			Debug::FatalError("Var left missing");
+		if (expr->left->type == ExprType::VARIABLE)
+		{
+			Variable* var = static_cast<Variable*>(expr->left.get());
+			if (CheckValue(var->name))
+				Debug::FatalError("Var left missing");
+		}
+		if (expr->right->type == ExprType::VARIABLE)
+		{
+			Variable* var = static_cast<Variable*>(expr->left.get());
+			if (CheckValue(var->name))
+				Debug::FatalError("Var right missing");
+		}
 	}
-	if (expr->right->type == ExprType::VARIABLE)
+	else if (type == ExprType::VARIABLE)
 	{
-		Variable* var = static_cast<Variable*>(expr->left.get());
-		if (CheckValue(var->name))
+		Variable* var = static_cast<Variable*>(whileStmt->condition.get());
+		if (var->name == "")
+			Debug::FatalError("Var name missing");
+		else if	(CheckValue(var->name))
 			Debug::FatalError("Var right missing");
 	}
-
+	else
+		Debug::FatalError("Wrong expression");
 	return ;
 }
 
