@@ -4,6 +4,8 @@
 
 #include "SimCalc.h"
 
+#include "Benchmark.h"
+
 Environment::Environment()
 {
 	begin = std::chrono::high_resolution_clock::now();
@@ -199,10 +201,14 @@ void Environment::SpawnMultiple(Troop troop, float x, float y, float amount, flo
 	{
 		game->AddSpawnTroop(sp, x, y, team_id);
 	}
+
+	Benchmark::Start();
 }
 
 float Environment::GetWinnerTeam()
 {
+	Benchmark::End("End Simulation");
+
 	return game->GetWinnerTeam();
 }
 

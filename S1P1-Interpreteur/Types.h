@@ -21,7 +21,7 @@ struct alignas(32) Troop
 	float range = 0;
 };
 
-struct  alignas(32) SpawnTroop
+struct  alignas(64) SpawnTroop
 {
 	float hp = 0;
 	float dmg = 0;
@@ -31,7 +31,8 @@ struct  alignas(32) SpawnTroop
 
 	float atkspeed = 0;
 	float progress_atkspeed = 0;
-
+	
+	float speed = 0;
 	float range = 0;
 	float team_id = 0;
 };

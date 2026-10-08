@@ -12,7 +12,7 @@ void SimCalc::UpdateSIMD(float dt)
 	UpdateLivingSIMD();
 }
 
-void SimCalc::UpdateScalar(float dt)
+__declspec(noinline) void SimCalc::UpdateScalar(float dt)
 {
 	UpdateAtkSpeedScalar(dt);
 	UpdateLivingScalar();
@@ -25,7 +25,8 @@ void SimCalc::UpdateAtkSpeedSIMD(float dt)
 
 	__m128 deltaTime = _mm_set_ps1(dt);
 
-	std::vector<size_t> indexes; //tab with troops which can attack
+	std::vector<size_t> indexes_to_atk; //tab with troops which can attack
+	std::vector<size_t> indexes_to_move;
 
 	for (; i + 3 < size; i += 4)
 	{
@@ -41,16 +42,24 @@ void SimCalc::UpdateAtkSpeedSIMD(float dt)
 		if (mask != 0)
 		{
 			if (mask & 1) // 0001
-				indexes.push_back(i + 0);
+				indexes_to_atk.push_back(i + 0);
+			else
+				indexes_to_move.push_back(i + 0);
 
 			if (mask & 2) // 0010
-				indexes.push_back(i + 1);
+				indexes_to_atk.push_back(i + 1);
+			else
+				indexes_to_move.push_back(i + 1);
 
 			if (mask & 4) // 0100
-				indexes.push_back(i + 2);
+				indexes_to_atk.push_back(i + 2);
+			else
+				indexes_to_move.push_back(i + 2);
 
 			if (mask & 8) // 1000
-				indexes.push_back(i + 3);
+				indexes_to_atk.push_back(i + 3);
+			else
+				indexes_to_move.push_back(i + 4);
 		}
 	}
 	for (; i < size; ++i)
@@ -58,30 +67,34 @@ void SimCalc::UpdateAtkSpeedSIMD(float dt)
 		progress_atkspeeds[i] -= dt;
 
 		if (progress_atkspeeds[i] <= 0)
-		{
-			indexes.push_back(i);
-		}
+			indexes_to_atk.push_back(i);
+		else
+			indexes_to_move.push_back(i);
 	}
 
-	UpdateAttackSIMD(indexes);
+	UpdateAttackSIMD(indexes_to_atk, dt);
+	UpdateMovingSIMD(indexes_to_move, dt);
 }
 
-void SimCalc::UpdateAtkSpeedScalar(float dt)
+__declspec(noinline) void SimCalc::UpdateAtkSpeedScalar(float dt)
 {
 	size_t size = progress_atkspeeds.size();
-	std::vector<size_t> indexes;
+	std::vector<size_t> indexes_to_atk;
+	std::vector<size_t> indexes_to_move;
 
+	#pragma loop(no_vector)
 	for (size_t i = 0; i < size; ++i)
 	{
 		progress_atkspeeds[i] -= dt;
 
 		if (progress_atkspeeds[i] <= 0)
-		{
-			indexes.push_back(i);
-		}
+			indexes_to_atk.push_back(i);
+		else
+			indexes_to_move.push_back(i);
 	}
 
-	UpdateAttackScalar(indexes);
+	UpdateAttackScalar(indexes_to_atk, dt);
+	UpdateMovingScalar(indexes_to_move, dt);
 }
 
 void SimCalc::UpdateLivingSIMD()
@@ -127,11 +140,12 @@ void SimCalc::UpdateLivingSIMD()
 	}
 }
 
-void SimCalc::UpdateLivingScalar()
+__declspec(noinline) void SimCalc::UpdateLivingScalar()
 {
 	size_t size = team_ids.size();
 	std::vector<size_t> indexes_to_erase = {};
 
+	#pragma loop(no_vector)
 	for (size_t i = 0; i < size; ++i)
 	{
 		if (healthpoints[i] <= 0)
@@ -146,17 +160,29 @@ void SimCalc::UpdateLivingScalar()
 	}
 }
 
+void SimCalc::UpdateMovingSIMD(std::vector<size_t>& indexes, float dt)
+{
+	//TODO
+}
+
+void SimCalc::UpdateMovingScalar(std::vector<size_t>& indexes, float dt)
+{
+	//TODO
+}
+
 void SimCalc::TroopPrint()
 {
-	for (int i = 0; i < spawn_troops.size(); i++)
+	/*for (int i = 0; i < spawn_troops.size(); i++)
 	{
 		std::cout << "Troop: " << i << " [team " << team_ids[i] << "], Hp: " << healthpoints[i] << ", (" << posX[i] << ", " << posY[i] << "), Progress_atkspeed " << progress_atkspeeds[i] << std::endl;
 	}
-	std::cout << "\n";
+	std::cout << "\n";*/
 }
 
-void SimCalc::UpdateAttackSIMD(std::vector<size_t>& indexes)
+void SimCalc::UpdateAttackSIMD(std::vector<size_t>& indexes, float dt)
 {
+	std::vector<size_t> indexes_cant_attack;
+
 	size_t attackers_size = indexes.size();
 	size_t size = team_ids.size();
 
@@ -201,8 +227,8 @@ void SimCalc::UpdateAttackSIMD(std::vector<size_t>& indexes)
 			if (team_ids[attacker_i] == team_ids[j] || healthpoints[j] <= 0)
 				continue;
 
-			float distX = posX[attacker_i] - posX[j];
-			float distY = posY[attacker_i] - posY[j];
+			float distX = posX[j] - posX[attacker_i];
+			float distY = posY[j] - posY[attacker_i];
 
 			float sqrDist = distX * distX + distY * distY;
 
@@ -215,37 +241,41 @@ void SimCalc::UpdateAttackSIMD(std::vector<size_t>& indexes)
 
 		if (target_index == size_t(-1))
 		{
-			std::cout << "Troop " << attacker_i << " has no one to attack\n";
+			indexes_cant_attack.push_back(attacker_i);
 			continue;
 		}
 
 		healthpoints[target_index] -= damages[attacker_i];
-		progress_atkspeeds[attacker_i] = spawn_troops[attacker_i].atkspeed;
+		progress_atkspeeds[attacker_i] = atkspeeds[attacker_i];
 
-		std::cout << "Troop " << attacker_i << " attacks Troop " << target_index << std::endl;
-
-		TroopPrint();
+		//std::cout << "Troop " << attacker_i << " attacks Troop " << target_index << " hp now : " << healthpoints[target_index] << std::endl;
 	}
+
+	UpdateMovingSIMD(indexes_cant_attack, dt);
 }
 
-void SimCalc::UpdateAttackScalar(std::vector<size_t>& indexes)
+__declspec(noinline) void SimCalc::UpdateAttackScalar(std::vector<size_t>& indexes, float dt)
 {
+	std::vector<size_t> indexes_cant_attack;
+
 	size_t attackers_size = indexes.size();
 	size_t size = team_ids.size();
 
+	#pragma loop(no_vector)
 	for (size_t i = 0; i < attackers_size; ++i)
 	{
 		size_t attacker_i = indexes[i];
 		size_t target_index = -1;
 		float minValue = -1;
 
+		#pragma loop(no_vector)
 		for (size_t j = 0; j < size; j++)
 		{
 			if (team_ids[indexes[attacker_i]] == team_ids[j] || healthpoints[j] <= 0)
 				continue;
 
-			float distX = posX[attacker_i] - posX[j];
-			float distY = posY[attacker_i] - posY[j];
+			float distX = posX[j] - posX[attacker_i];
+			float distY = posY[j] - posY[attacker_i];
 
 			float sqrDist = distX * distX + distY * distY;
 
@@ -258,23 +288,21 @@ void SimCalc::UpdateAttackScalar(std::vector<size_t>& indexes)
 
 		if (target_index == size_t(-1))
 		{
-			std::cout << "Troop " << attacker_i << " has no one to attack\n";
+			indexes_cant_attack.push_back(attacker_i);
 			continue;
 		}
 
 		healthpoints[target_index] -= damages[attacker_i];
-		progress_atkspeeds[attacker_i] = spawn_troops[attacker_i].atkspeed;
+		progress_atkspeeds[attacker_i] = atkspeeds[attacker_i];
 
-		std::cout << "Troop " << attacker_i << " attaque Troop " << target_index << std::endl;
-
-		TroopPrint();
+		//std::cout << "Troop " << attacker_i << " attacks Troop " << target_index << " hp now : " << healthpoints[target_index] << std::endl;
 	}
+
+	UpdateMovingScalar(indexes_cant_attack, dt);
 }
 
 void SimCalc::AddSpawnTroop(SpawnTroop& sp, float x, float y, float team_id)
 {
-	spawn_troops.push_back(sp);
-
 	posX.push_back(x);
 	posY.push_back(y);
 
@@ -282,6 +310,9 @@ void SimCalc::AddSpawnTroop(SpawnTroop& sp, float x, float y, float team_id)
 	damages.push_back(sp.dmg);
 
 	progress_atkspeeds.push_back(0);
+	atkspeeds.push_back(sp.atkspeed);
+
+	speeds.push_back(sp.speed);
 	ranges.push_back(sp.range);
 
 	team_ids.push_back(team_id);
@@ -289,9 +320,6 @@ void SimCalc::AddSpawnTroop(SpawnTroop& sp, float x, float y, float team_id)
 
 void SimCalc::RemoveSpawnTroop(size_t index)
 {
-	std::swap(spawn_troops[index], spawn_troops.back());
-	spawn_troops.pop_back();
-
 	std::swap(posX[index], posX.back());
 	posX.pop_back();
 
@@ -307,6 +335,12 @@ void SimCalc::RemoveSpawnTroop(size_t index)
 	std::swap(progress_atkspeeds[index], progress_atkspeeds.back());
 	progress_atkspeeds.pop_back();
 
+	std::swap(atkspeeds[index], atkspeeds.back());
+	atkspeeds.pop_back();
+
+	std::swap(speeds[index], speeds.back());
+	speeds.pop_back();
+
 	std::swap(ranges[index], ranges.back());
 	ranges.pop_back();
 
@@ -316,6 +350,7 @@ void SimCalc::RemoveSpawnTroop(size_t index)
 
 float SimCalc::GetAliveTroops() const
 {
+	std::cout << "There are " << team_ids.size() << " troops alive\n";
 	return static_cast<float>(team_ids.size());
 }
 
@@ -358,6 +393,7 @@ float SimCalc::GetAliveTroopsInTeam(int team_id) const
 			count++;
 	}
 
+	std::cout << "There are " << count << " troops alive in team " << team_id << "\n";
 	return static_cast<float>(count);
 }
 
