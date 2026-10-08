@@ -212,5 +212,5 @@ float Environment::GetWinnerTeam()
 
 void Environment::Update()
 {
-	game->UpdateScalar(FIXED_DT);
+	game->UpdateSIMD(FIXED_DT);
 }
