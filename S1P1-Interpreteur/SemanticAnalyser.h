@@ -21,15 +21,20 @@ struct SemanticAnalyser
 	void AnalyseStmt();
 public:
 	void SemanticSwitch(Stmt* stmt);
+	void SemanticExpresion(Expr* expr);
+
 	void SemanticAssign(Stmt* stmt);
 	void SemanticIf(Stmt* stmt);
 	void SemanticWhile(Stmt* stmt);
 	void SemanticFor(Stmt* stmt);
-	void SemanticTroop(Stmt* stmt);
 	void SemanticBlock(Stmt* stmt);
 	void SemanticVal(Stmt* stmt);
-	void SemanticExpr(Stmt* stmt);
+	void SemanticFunction(Stmt* stmt);
+
+	void SemanticBinary(Expr* expr);
+	void SemanticGrouping(Expr* expr);
 	void AddDatasBlock(bool remove = false);
+
 	bool MapExists(size_t block, std::string name) const;
 	void ValInBlock(std::string name, Type value);
 	bool CheckValue(std::string name);
