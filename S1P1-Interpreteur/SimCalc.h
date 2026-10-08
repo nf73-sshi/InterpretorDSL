@@ -2,7 +2,7 @@
 #include <vector>
 #include "Types.h"
 
-//#define PRINT_DEBUG
+#define PRINT_DEBUG
 
 struct SimCalc
 {
