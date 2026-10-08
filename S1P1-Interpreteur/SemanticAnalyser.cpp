@@ -47,17 +47,15 @@ void SemanticAnalyser::SemanticAssign(Stmt* stmt)
 	AssignStmt* asnStmt = static_cast<AssignStmt*>(stmt);
 
 	if (!CheckValue(asnStmt->name))
-	{
 		ValInBlock(asnStmt->name, Type::TYPE_FLOAT);
-	}
-	else
+
+
 		SemanticExpresion(asnStmt->expr.get());
 }
 
 
 void SemanticAnalyser::SemanticIf(Stmt* stmt)
 {
-
 	IfStmt* ifStmt = static_cast<IfStmt*>(stmt);
 
 	SemanticExpresion(ifStmt->condition.get());
@@ -97,9 +95,10 @@ void SemanticAnalyser::SemanticVal(Stmt* stmt)
 	ValStmt* valStmt = static_cast<ValStmt*>(stmt);
 
 	if (CheckValue(valStmt->name))
-		Debug::FatalError("Var is allready initiate");
-	else
+		Debug::FatalError("Var" + valStmt->name + "is allready initiate");
+
 		ValInBlock(valStmt->name, Type::TYPE_FLOAT);
+		SemanticExpresion(valStmt->expr.get());
 
 }
 
@@ -116,6 +115,7 @@ void SemanticAnalyser::SemanticExpresion(Expr* expr)
 	case LITERAL:
 		break;
 	case VARIABLE:
+		SemanticVariable(expr);
 		break;
 	case GROUPING:
 		SemanticGrouping(expr);
@@ -131,6 +131,13 @@ void SemanticAnalyser::SemanticExpresion(Expr* expr)
 		Debug::FatalError("Expression not Instancied");
 		break;
 	}
+}
+
+void SemanticAnalyser::SemanticVariable(Expr* expr)
+{
+	Variable* valStmt = static_cast<Variable*>(expr);
+	if (!CheckValue(valStmt->name))
+		Debug::FatalError("Var "+ valStmt->name + " is not initiate");
 }
 
 void SemanticAnalyser::SemanticBinary(Expr* expr)
@@ -175,7 +182,7 @@ void SemanticAnalyser::ValInBlock(std::string name, Type value)
 			break;
 		}
 		else
-			Debug::FatalError("Var allready create");
+			Debug::FatalError("Var" + name + "allready create");
 
 		current_block--;
 	}

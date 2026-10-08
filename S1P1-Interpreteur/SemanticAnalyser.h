@@ -31,6 +31,7 @@ public:
 	void SemanticVal(Stmt* stmt);
 	void SemanticFunction(Stmt* stmt);
 
+	void SemanticVariable(Expr* expr);
 	void SemanticBinary(Expr* expr);
 	void SemanticGrouping(Expr* expr);
 	void AddDatasBlock(bool remove = false);

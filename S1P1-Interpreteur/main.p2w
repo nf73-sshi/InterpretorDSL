@@ -12,4 +12,4 @@ while state
 	state = IsBattling()
 }
 
-val x = GetWinnerTeam()
+val x =  skibidi
