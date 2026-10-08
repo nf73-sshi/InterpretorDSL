@@ -207,12 +207,10 @@ void Environment::SpawnMultiple(Troop troop, float x, float y, float amount, flo
 
 float Environment::GetWinnerTeam()
 {
-	Benchmark::End("End Simulation");
-
 	return game->GetWinnerTeam();
 }
 
 void Environment::Update()
 {
-	game->UpdateSIMD(FIXED_DT);
+	game->UpdateScalar(FIXED_DT);
 }
