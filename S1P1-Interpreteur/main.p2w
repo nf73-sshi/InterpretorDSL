@@ -1,10 +1,10 @@
 
 val state = 1
-Troop ebarb = cost:0 hp:10 dmg:1 radius:1 fatkspeed:0.1 atkspeed:0.2 speed:1 range:1
-Troop golem = cost:0 hp:1000 dmg:10 radius:3 fatkspeed:0.5 atkspeed:0.5 speed:0.2 range:1
+Troop ebarb = cost:0 hp:10 dmg:1 radius:1 fatkspeed:0.1 atkspeed:0.5 speed:1 range:1
+Troop golem = cost:0 hp:100 dmg:10 radius:3 fatkspeed:0.5 atkspeed:1 speed:0.2 range:1
 
-SpawnMultiple(ebarb, -10, 0, 100, 0)
-SpawnMultiple(ebarb, 10, 0, 100, 1)
+SpawnMultiple(ebarb, -10, 0, 1000, 0)
+SpawnMultiple(golem, 10, 0, 100, 1)
 
 while IsBattling()
 {
